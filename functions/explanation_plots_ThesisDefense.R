@@ -20,33 +20,33 @@ library(gridExtra)
 
 # dir_path <- "C:/Users/lotte.pohl/Documents/github_repos/MasterThesis_LottePohl"
 dir_path <- "C:/users/lotte/Documents/Repos_Gitkraken/MasterThesis_LottePohl_MDA"
-path_envdata <- paste0(dir_path, "/00_data/environmental_layers/")
-path_boundaries <- paste0(dir_path, "/00_data/marine_boundaries/")
-path_maps <- "C:/Users/lotte/HiDrive/Master/MasterThesis/presentations/20230628_30_Thesis_defense/plots_maps/"
+# path_envdata <- paste0(dir_path, "/00_data/environmental_layers/")
+# path_boundaries <- paste0(dir_path, "/00_data/marine_boundaries/")
+# path_maps <- "C:/Users/lotte/HiDrive/Master/MasterThesis/presentations/20230628_30_Thesis_defense/plots_maps/"
 
 # paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_plots.R") %>% base::source()
 
 paste0(dir_path, "/01_code/06_functions/functions.R") %>% source()
 paste0(dir_path, "/01_code/04_analyses/FFT/calculate_fft_psd.R") %>% source()
-source(paste0(dir_path, "/01_code/02_load_data/load_environmental_data.R"))
-source(paste0(dir_path, "/01_code/02_load_data/load_human_activities.R"))
-source(paste0(dir_path, "/01_code/02_load_data/load_marine_boundaries.R"))
-source(paste0(dir_path, "/01_code/02_load_data/load_acoustic_detections.R"))
-source(paste0(dir_path, "/01_code/02_load_data/load_bathy.R"))
-paste0(dir_path, "/01_code/02_load_data/load_dst_geolocation_output.R") %>% base::source()
-paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_tables.R") %>% base::source()
+# source(paste0(dir_path, "/01_code/02_load_data/load_environmental_data.R"))
+# source(paste0(dir_path, "/01_code/02_load_data/load_human_activities.R"))
+# source(paste0(dir_path, "/01_code/02_load_data/load_marine_boundaries.R"))
+# source(paste0(dir_path, "/01_code/02_load_data/load_acoustic_detections.R"))
+# source(paste0(dir_path, "/01_code/02_load_data/load_bathy.R"))
+# paste0(dir_path, "/01_code/02_load_data/load_dst_geolocation_output.R") %>% base::source()
+# paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_tables.R") %>% base::source()
 
 ## load data ####
 paste0(dir_path, "/01_code/02_load_data/load_dst_summarystatistics.R") %>% base::source()
 # paste0(dir_path, "/01_code/02_load_data/load_acoustic_detections.R") %>% base::source()
 # to do: choose df's to load to reduce workspace size
 paste0(dir_path, "/01_code/02_load_data/load_wavelet_results.R") %>% base::source()
-paste0(dir_path, "/01_code/02_load_data/load_autocorrelation_results.R") %>% base::source()
+# paste0(dir_path, "/01_code/02_load_data/load_autocorrelation_results.R") %>% base::source()
 paste0(dir_path, "/01_code/02_load_data/load_depth_temp_logs.R") %>% base::source()
 paste0(dir_path, "/01_code/02_load_data/load_fft_results.R") %>% base::source()
 # paste0(dir_path, "/01_code/02_load_data/load_cpd_results.R") %>% base::source()
 # paste0(dir_path, "/01_code/02_load_data/load_vertical_space_use_analysis.R") %>% base::source()
-paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_tables.R") %>% base::source()
+# paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_tables.R") %>% base::source()
 # paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_models.R") %>% base::source()
 
 ## set path were all figures are saved ####
@@ -55,16 +55,16 @@ paste0(dir_path, "/01_code/02_load_data/manuscript_figures/load_tables.R") %>% b
 ## theme ####
 
 thesis_theme <- ggplot2::theme(
-  plot.title = element_text(family = "serif", size = 11, face = "bold"),
-  plot.subtitle = element_text(family = "serif", size = 11),
-  axis.title = element_text(family = "serif", size = 11),
-  axis.text = element_text(family = "serif", size = 9), #5.5
-  legend.title = element_text(family = "serif", size = 9),
-  legend.text = element_text(family = "serif", size = 9),
+  plot.title = element_text(size = 11, face = "bold"),
+  plot.subtitle = element_text(size = 11),
+  axis.title = element_text(size = 11),
+  axis.text = element_text(size = 9), #5.5
+  legend.title = element_text(size = 9),
+  legend.text = element_text(size = 9),
   legend.key = element_rect(fill = "transparent", colour = "transparent"),
   # legend.key.width = unit(2, "cm"),
   legend.margin = margin(t = -10, b = -10, r = -10, l = -10),
-  plot.tag = element_text(face = "bold", family = "serif", size = 12),
+  plot.tag = element_text(face = "bold", size = 12),
   # plot.tag.position =  c(0.065, 0.96), #"topleft", 
   plot.tag.position =  c(0.01, 0.98), #"topleft", 
   plot.background = element_blank(),
@@ -78,7 +78,7 @@ thesis_theme <- ggplot2::theme(
   strip.background = element_blank(),
   strip.background.x = element_blank(),
   strip.background.y = element_blank(),
-  strip.text = element_text(family = "serif") #face = "bold", 
+  strip.text = element_text() #face = "bold", 
 )
 
 # Set the theme as the default for all plots
