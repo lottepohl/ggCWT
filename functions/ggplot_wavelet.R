@@ -24,11 +24,15 @@ library(ggplot2)
 # # max_period <- wavelet_df %>% select(period) %>% max()
 # max_period <- NULL
 
+# test again
+wavelet_df <- xwt_both_12_24_df
+max_period <- wavelet_df %>% select(period) %>% max()
+
 # TODO: fix bug with `max_period`: when piping `ggplot_wavelet()`, `max_period` should be able to be left emtpy and not return errors
 # potentially has to do with the übergabe von dem dataframe an die funktion, während der Ausführung kann 
 # wsl nicht direkt drauf zugegriffen werden, deswegen kann das max nicht rausgezogen werden
 
-ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = TRUE){
+ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
   

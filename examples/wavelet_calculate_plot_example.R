@@ -146,8 +146,8 @@ signal_12_CWT_plot
 signal_12_24_CWT_plot
 
 # save plots
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_CWT_plot.png"), plot = signal_12_CWT_plot + theme_bw(base_size = 5))
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_24_CWT_plot.png"), plot = signal_12_24_CWT_plot + theme_bw(base_size = 5))
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_CWT_plot.png"), plot = signal_12_CWT_plot + theme_bw(base_size = 5))
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_24_CWT_plot.png"), plot = signal_12_24_CWT_plot + theme_bw(base_size = 5))
 
 # 4. compute cross wavelet analysis ####
 
@@ -168,3 +168,6 @@ signals_xwt_plot <- ggplot_wavelet(wavelet_df = signals_xwt_df,
                                       date = T,
                                       max_period = signals_xwt_df %>% dplyr::select(period) %>% max()) # signal_12_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
 signals_xwt_plot
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signals_xwt_plot.png"), plot = signals_xwt_plot + theme_bw(base_size = 5))

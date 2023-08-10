@@ -15,14 +15,16 @@ library(dplyr)
 library(purrr)
 library(ggplot2)
 library(tidyr)
+library(stats)
 
-##### test ###
+# ##### test ###
 # values <- signal_12_24 %>% select(depth_m)
 # dt <- dt_hours * 15
 # date_times <- signal_12_24 %>% select(date_time)
 # wavelet_result <- signal_12_24_cwt
+# signif_level <- 0.95
 
-make_wavelet_df <- function(wavelet_result, date_times, dt){
+make_wavelet_df <- function(wavelet_result, date_times, dt, signif_level = 0.95){
 
   # downsample date_times
   date_times_downsampled <- date_times %>% 
@@ -46,6 +48,9 @@ make_wavelet_df <- function(wavelet_result, date_times, dt){
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% #don't pivot the last column
     dplyr::rename(significance = value) 
   
+  # calculate cutoff significance percentile value
+  signif_level_val <- stats::quantile(signif$significance, probs = signif_level)
+  
   wavelet_df <- wavelet_result$power %>% base::as.data.frame() %>%
     purrr::set_names(dates$date_times_character) %>%
     base::cbind(period) %>%
@@ -65,7 +70,7 @@ make_wavelet_df <- function(wavelet_result, date_times, dt){
                   power_log_scale = power_log %>% scale(),
                   period_log = log2(period),
                   t = sprintf("%04f", t %>% as.numeric()),
-                  sig = ifelse(significance >= 1, 1, 0)) %>%
+                  sig = ifelse(significance >= signif_level_val, 1, 0)) %>% # 2 bisher das beste ergebnis
     dplyr::ungroup()
   
   return(wavelet_df)

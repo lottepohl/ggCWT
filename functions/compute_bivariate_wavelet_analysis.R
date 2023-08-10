@@ -29,6 +29,18 @@ library(gridExtra)
 # factor_smallest_scale <- 2
 # type <- "cross wavelet"
 
+# test Mustelus asterias
+# 
+# values1 <- depthlog_male %>% dplyr::select(depth_m)
+# 
+# values2 <- generic_signals  %>%
+#   dplyr::filter(date_time %>% 
+#                   dplyr::between(min(depthlog_male$date_time),
+#                                  max(depthlog_male$date_time))) %>% 
+#   dplyr::select(depth_m_12)
+# 
+# dt <- 15 * dt_hours
+
 # 1. compute wavelet coherence ####
 
 compute_bivariate_wavelet_analysis <- function(values1, values2,
@@ -55,7 +67,9 @@ compute_bivariate_wavelet_analysis <- function(values1, values2,
          # compute cross wavelet
   result <- biwavelet::xwt(d1 = wtc_input1,
                         d2 = wtc_input2,
-                        s0 = factor_smallest_scale * dt) # this specifies the scale at which periods are looked at
+                        s0 = factor_smallest_scale * dt,
+                        sig.level = 0.9999,
+                        sig.test = 1)
   ,     # compute wavelet coherence 
   result <- biwavelet::wtc(d1 = wtc_input1,
                            d2 = wtc_input2,
