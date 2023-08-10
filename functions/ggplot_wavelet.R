@@ -1,11 +1,11 @@
-# Script with function to plot a wavelet analysis output from `make_Ccwt_df()` as a ggplot object
+# Script with function to plot a wavelet analysis output from `make_wavelet_df()` as a ggplot object
 # Author: Lotte Pohl, Date: 2023-08-08
 
-#' function to plot a wavelet analysis output from `make_CWT_df()` as a ggplot object.
+#' function to plot a wavelet analysis output from `make_wavelet_df()` as a ggplot object.
 #' 
 #' @author Lotte Pohl (lotte.pohl@@gmail.com)
 #'
-#' @param cwt_df dataframe, for example an output from `make_CWT_df()` that contains the periods and time stamps / dates of a CWT result biwavelet object.
+#' @param wavelet_df dataframe, for example an output from `make_wavelet_df()` that contains the periods and time stamps / dates of a wavelet result biwavelet object.
 #' @param date logical operator stating if the time should be plotted as time steps or as dates.
 #' @param max_period the maximum period that should be included in the ggplot object.
 
@@ -14,42 +14,42 @@ library(dplyr)
 library(ggplot2)
 
 # test
-# cwt_df <- signal_CWT_df
+# wavelet_df <- signal_cwt_df
 # date <- TRUE
 # max_period <- 4200
 
 # ## test xwt
-# cwt_df <- signals_xwt_df
+# wavelet_df <- signals_xwt_df
 # date <- T
-# max_period <- cwt_df %>% select(period) %>% max()
+# max_period <- wavelet_df %>% select(period) %>% max()
 
 
-plot_CWT_ggplot <- function(cwt_df, date = TRUE, max_period){
+ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
   
   # change or leave out to make more general
-  cwt_df <- cwt_df %>% dplyr::filter(date > (min(cwt_df$date) + lubridate::days(7))) # cut first week of data off to avoid looking at tagging effect
+  wavelet_df <- wavelet_df %>% dplyr::filter(date > (min(wavelet_df$date) + lubridate::days(7))) # cut first week of data off to avoid looking at tagging effect
   
   # y axis labels
-  y_breaks <- 2^floor(log2(cwt_df$period)) %>% unique()
+  y_breaks <- 2^floor(log2(wavelet_df$period)) %>% unique()
   y_breaks <- y_breaks[y_breaks <= max_period]
 
   # filter out the undesired periods
-  cwt_df <- cwt_df %>% dplyr::filter(period <= max_period) 
+  wavelet_df <- wavelet_df %>% dplyr::filter(period <= max_period) 
   
   # change max and min date to include max x axis label completely --> make customisable
-  max_date <- max(cwt_df$date) + lubridate::days(10)
-  min_date <- min(cwt_df$date) -lubridate::days(10)
+  max_date <- max(wavelet_df$date) + lubridate::days(10)
+  min_date <- min(wavelet_df$date) -lubridate::days(10)
   
   ifelse(date %>% base::isTRUE(),
                   # for now: plot only power_log
-                  plot <- ggplot2::ggplot(data = cwt_df) +
+                  plot <- ggplot2::ggplot(data = wavelet_df) +
                   geom_tile(aes(x = date, y = period, fill = power_log),
                             position = "identity",
                             alpha = 0.6) + 
                   # plot the significant periods fully opaque
-                  geom_tile(data = cwt_df %>% dplyr::filter(sig == 1), 
+                  geom_tile(data = wavelet_df %>% dplyr::filter(sig == 1), 
                             aes(x = date, y = period, fill = power_log),
                             position = "identity") +
                   scale_y_continuous(trans = my_trans,
@@ -72,12 +72,12 @@ plot_CWT_ggplot <- function(cwt_df, date = TRUE, max_period){
          
          , # if date != TRUE
          
-                plot <- ggplot(data = cwt_df) +
+                plot <- ggplot(data = wavelet_df) +
                   geom_tile(aes(x = t, y = period, fill = power_log),
                             position = "identity",
                             alpha = 0.6) + 
                   # plot the significant periods fully opaque
-                  geom_tile(data = cwt_df %>% dplyr::filter(sig == 1), 
+                  geom_tile(data = wavelet_df %>% dplyr::filter(sig == 1), 
                             aes(x = t, y = period, fill = power_log),
                             position = "identity") +
                   scale_y_continuous(trans = my_trans,

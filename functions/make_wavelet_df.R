@@ -4,8 +4,8 @@
 #'
 #' `values` and `date_times` must have the same length, i.e. one value should correspond to one element of `date_times`.
 #'
-#' @param values numeric vector of values to be taken as input for the cwt_result calculation.
-#' @param dt The desired time step between two values that are taken as input. Can either be the original dt between two values or a larger time distance, then the values are downsampled. Has to be in the unit of the desired periods of the cwt_result, i.e. hours, days, minutes, years, ...
+#' @param values numeric vector of values to be taken as input for the wavelet_result calculation.
+#' @param dt The desired time step between two values that are taken as input. Can either be the original dt between two values or a larger time distance, then the values are downsampled. Has to be in the unit of the desired periods of the wavelet_result, i.e. hours, days, minutes, years, ...
 #' @param date_times vector containing date and time that correspond to the values.
 #' @param object of class "biwavelet" from `biwavelet::wt()`.
 
@@ -17,12 +17,12 @@ library(ggplot2)
 library(tidyr)
 
 ##### test ###
-values <- signal_12_24 %>% select(depth_m)
-dt <- dt_hours * 15
-date_times <- signal_12_24 %>% select(date_time)
-cwt_result <- signal_12_24_CWT
+# values <- signal_12_24 %>% select(depth_m)
+# dt <- dt_hours * 15
+# date_times <- signal_12_24 %>% select(date_time)
+# wavelet_result <- signal_12_24_cwt
 
-make_CWT_df <- function(date_times, dt, cwt_result){
+make_wavelet_df <- function(date_times, dt, wavelet_result){
 
   # downsample date_times
   date_times_downsampled <- date_times %>% 
@@ -38,20 +38,20 @@ make_CWT_df <- function(date_times, dt, cwt_result){
                   date_times_character= date_times_downsampled %>% as.character())
   
   # extract important results
-  period <- cwt_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
-  xaxis <- cwt_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
-  signif <- cwt_result$signif %>% base::as.data.frame() %>%
+  period <- wavelet_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
+  xaxis <- wavelet_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
+  signif <- wavelet_result$signif %>% base::as.data.frame() %>%
     purrr::set_names(dates$date_times_character) %>%
     base::cbind(period) %>%
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% #don't pivot the last column
     dplyr::rename(significance = value) 
   
-  cwt_df <- cwt_result$power %>% base::as.data.frame() %>%
+  wavelet_df <- wavelet_result$power %>% base::as.data.frame() %>%
     purrr::set_names(dates$date_times_character) %>%
     base::cbind(period) %>%
     dplyr::arrange(desc(period))
   
-  cwt_df <- cwt_df %>%
+  wavelet_df <- wavelet_df %>%
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% 
     dplyr::rename(power = value) %>% 
     dplyr::left_join(dates, by = "date_times_character", multiple = "all") %>%
@@ -68,10 +68,10 @@ make_CWT_df <- function(date_times, dt, cwt_result){
                   sig = ifelse(significance >= 1, 1, 0)) %>%
     dplyr::ungroup()
   
-  return(cwt_df)
+  return(wavelet_df)
 }
 
-# make_CWT_df <- function(values, date_times, dt, cwt_result){
+# make_wavelet_df <- function(values, date_times, dt, wavelet_result){
 #   # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")
 #   
 #   # downsample raw values
@@ -99,9 +99,9 @@ make_CWT_df <- function(date_times, dt, cwt_result){
 #            date_times_character= date_times_downsampled %>% as.character())
 #   
 #   # extract important results
-#   period <- cwt_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
-#   xaxis <- cwt_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
-#   signif <- cwt_result$signif %>% base::as.data.frame() %>%
+#   period <- wavelet_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
+#   xaxis <- wavelet_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
+#   signif <- wavelet_result$signif %>% base::as.data.frame() %>%
 #     purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
 #     # purrr::set_names(as.character(date_times$date)) %>% #sum by day, but not yet
 #     base::cbind(period) %>%
@@ -109,15 +109,15 @@ make_CWT_df <- function(date_times, dt, cwt_result){
 #     dplyr::rename(significance = value) #%>%
 #     # mutate(date_times_downsampled = date_times_downsampled %>% base::as.POSIXct())
 #   
-#   # cwt_df <- cwt_result$power.corr %>% base::as.data.frame() %>%
-#   cwt_df <- cwt_result$power %>% base::as.data.frame() %>%
+#   # wavelet_df <- wavelet_result$power.corr %>% base::as.data.frame() %>%
+#   wavelet_df <- wavelet_result$power %>% base::as.data.frame() %>%
 #     purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
 #     # purrr::set_names(as.character(date_times$date)) %>% #sum by day
 #     base::cbind(period) %>%
 #     # mutate(period_log = log2(period))# %>%
 #     dplyr::arrange(desc(period))
 #   
-#   cwt_df <- cwt_df %>%
+#   wavelet_df <- wavelet_df %>%
 #     # tidyr::pivot_longer(cols = -c(last_col(offset = 1), last_col(offset = 0)), names_to = "date_time") %>% #don't pivot the two last columns
 #     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% 
 #     dplyr::rename(power = value) %>% 
@@ -135,5 +135,5 @@ make_CWT_df <- function(date_times, dt, cwt_result){
 #            sig = ifelse(significance >= 1, 1, 0)) %>%
 #     dplyr::ungroup()
 #   
-#   return(cwt_df)
+#   return(wavelet_df)
 # }

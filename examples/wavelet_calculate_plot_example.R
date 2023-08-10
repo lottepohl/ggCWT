@@ -1,15 +1,16 @@
-# Script with example to calculate and plot a continuous wavelet transform of a simulated time series.
+# Script with example to calculate and plot a continuous wavelet transform and a cross wavelet analysis of simulated time series.
 # Author: Lotte Pohl, Date: 2023-08-08
 
 library(dplyr)
 library(ggplot2)
-# library(tibble)
+
+rm(list = ls())
 
 # 0. load functions
 
 base::paste0(base::getwd(), "/functions/compute_CWT.R") %>% base::source()
-base::paste0(base::getwd(), "/functions/make_CWT_df.R") %>% base::source()
-base::paste0(base::getwd(), "/functions/plot_CWT_ggplot.R") %>% base::source()
+base::paste0(base::getwd(), "/functions/make_wavelet_df.R") %>% base::source()
+base::paste0(base::getwd(), "/functions/ggplot_wavelet.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/compute_bivariate_wavelet_analysis.R") %>% base::source()
 
 # plot language == English
@@ -122,23 +123,23 @@ signal_12_24_CWT <- compute_CWT(values = signal_12_24 %>% select(depth_m),
                           dt = dt_hours * 15, # every 30 min
                           factor_smallest_scale = 2) # test different vals
 
-# 3. `make_CWT_df()` example ####
+# 3. `make_wavelet_df()` example ####
 
-signal_12_CWT_df <- make_CWT_df(date_times = signal_12 %>% dplyr::select(date_time),
+signal_12_CWT_df <- make_wavelet_df(date_times = signal_12 %>% dplyr::select(date_time),
                              dt = dt_hours * 15,
-                             cwt_result = signal_12_CWT)
+                             wavelet_result = signal_12_CWT)
 
-signal_12_24_CWT_df <- make_CWT_df(date_times = signal_12_24 %>% dplyr::select(date_time),
+signal_12_24_CWT_df <- make_wavelet_df(date_times = signal_12_24 %>% dplyr::select(date_time),
                                    dt = dt_hours * 15,
-                                   cwt_result = signal_12_24_CWT)
+                                   wavelet_result = signal_12_24_CWT)
 
-# 4. `plot_CWT_ggplot()` example
+# 4. `ggplot_wavelet()` example
 
-signal_12_CWT_plot <- plot_CWT_ggplot(cwt_df = signal_12_CWT_df,
+signal_12_CWT_plot <- ggplot_wavelet(wavelet_df = signal_12_CWT_df,
                                    date = T,
                                    max_period = signal_12_CWT_df %>% dplyr::select(period) %>% max()) # signal_12_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
 
-signal_12_24_CWT_plot <- plot_CWT_ggplot(cwt_df = signal_12_24_CWT_df,
+signal_12_24_CWT_plot <- ggplot_wavelet(wavelet_df = signal_12_24_CWT_df,
                                          date = T,
                                          max_period = signal_12_24_CWT_df %>% dplyr::select(period) %>% max()) # signal_12_24_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
 signal_12_CWT_plot
@@ -164,15 +165,15 @@ signals_xwt <- compute_bivariate_wavelet_analysis(type = 'cross wavelet',
                                                   dt = dt_hours * 15,
                                                   factor_smallest_scale = 4) 
 
-signals_xwt_df <- make_CWT_df(date_times = signal_12 %>% 
+signals_xwt_df <- make_wavelet_df(date_times = signal_12 %>% 
                                 # dplyr::filter(date_time %>%
                                 #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
                                 #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>% 
                                 dplyr::select(date_time),
                                 dt = dt_hours * 15,
-                                cwt_result = signals_xwt)
+                                wavelet_result = signals_xwt)
 
-signals_xwt_plot <- plot_CWT_ggplot(cwt_df = signals_xwt_df,
+signals_xwt_plot <- ggplot_wavelet(wavelet_df = signals_xwt_df,
                                       date = T,
                                       max_period = signals_xwt_df %>% dplyr::select(period) %>% max()) # signal_12_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
 signals_xwt_plot
