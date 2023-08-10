@@ -71,19 +71,20 @@ make_CWT_df <- function(values, date_times, dt, cwt_result){
   cwt_df <- cwt_df %>%
     # tidyr::pivot_longer(cols = -c(last_col(offset = 1), last_col(offset = 0)), names_to = "date_time") %>% #don't pivot the two last columns
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% 
-    rename(power = value) %>% 
+    dplyr::rename(power = value) %>% 
     # relocate(date, period, power) %>%
-    left_join(dates, by = "date_times_character", multiple = "all") %>%
-    left_join(signif, by = c("period", "date_times_character"), multiple = "all") %>% #View()
-    group_by(date, period) %>%
-    summarise(power = power %>% max(),
+    dplyr::left_join(dates, by = "date_times_character", multiple = "all") %>%
+    dplyr::left_join(signif, by = c("period", "date_times_character"), multiple = "all") %>% #View()
+    dplyr::group_by(date, period) %>%
+    dplyr::summarise(power = power %>% max(),
               significance = significance %>% max(),
               t = t %>% max()) %>%
-    mutate(power_log = log2(power),
+    dplyr::mutate(power_log = log2(power),
            power_log_scale = power_log %>% scale(),
            period_log = log2(period),
            t = sprintf("%04f", t %>% as.numeric()),
-           sig = ifelse(significance >= 1, 1, 0))
+           sig = ifelse(significance >= 1, 1, 0)) %>%
+    dplyr::ungroup()
   
   return(cwt_df)
 }
