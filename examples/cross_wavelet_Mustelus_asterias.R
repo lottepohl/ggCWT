@@ -7,9 +7,11 @@ library(scales)
 library(tidyr)
 library(ggplot2)
 library(biwavelet)
+library(signal)
 
 # load functions ####
 
+base::paste0(base::getwd(), "/functions/load_save_data_rds.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/compute_CWT.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/make_wavelet_df.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/ggplot_wavelet.R") %>% base::source()
@@ -22,7 +24,7 @@ base::paste0(base::getwd(), "/functions/compute_bivariate_wavelet_analysis.R") %
 f = 1/720 #because if 30 samples per hour are to be taken, these amount to 30 * 24 = 720 samples per day
 
 signal_start_date <- "2018-07-01 01:00:00" %>% base::as.POSIXct(tz = "UTC")
-signal_length_days <- 500
+signal_length_days <- 550
 
 sampling_rate_hours <- 30 # 30 samples per hour
 dt_hours <- 1/sampling_rate_hours # 2 mins expressed in the unit of hours, i.e., 2 mins / 60 mins == 1/30 hours ~ 0.033h
@@ -96,3 +98,123 @@ cwt_24_plot <- compute_CWT(values = generic_signals %>% dplyr::select(depth_m_24
 cwt_24_plot
 
 gridExtra::grid.arrange(cwt_12_plot, cwt_24_plot, xwt_12_24_plot, ncol = 1)
+
+
+# Mustelus asterias depthlogs ####
+
+## load depthlogs ####
+depthlog_female <- load_data(filestring = "depthlog_female", folder = base::paste0(base::getwd(), "/examples/data/")) %>%
+  dplyr::mutate(depth_m_sgolayfilt = depth_m %>% signal::sgolayfilt(p = 3, n = 9))
+
+depthlog_male <- load_data(filestring = "depthlog_male", folder = base::paste0(base::getwd(), "/examples/data/")) %>%
+  dplyr::mutate(depth_m_sgolayfilt = depth_m %>% signal::sgolayfilt(p = 3, n = 9))
+
+# plot depthlogs ####
+## plot signals ####
+
+depthlogs_plot <- ggplot2::ggplot() +
+  geom_line(data = depthlog_female %>% 
+              dplyr::filter(date_time %>% dplyr::between("2018-09-05 01:00:00" %>% base::as.POSIXct(tz = "UTC"),
+                                                         "2018-09-16 01:00:00" %>% base::as.POSIXct(tz = "UTC"))),
+            aes(x = date_time, y = -depth_m), size = .75, colour = 'darkorange') +
+  geom_line(data = depthlog_female %>% 
+              dplyr::filter(date_time %>% dplyr::between("2018-09-05 01:00:00" %>% base::as.POSIXct(tz = "UTC"),
+                                                         "2018-09-16 01:00:00" %>% base::as.POSIXct(tz = "UTC"))),
+            aes(x = date_time, y = -depth_m_sgolayfilt), size = .75, colour = 'darkgreen') +
+  # geom_line(data = depthlog_male %>% 
+  #             dplyr::filter(date_time %>% dplyr::between("2018-09-01 01:00:00" %>% base::as.POSIXct(tz = "UTC"),
+  #                                                        "2018-11-01 01:00:00" %>% base::as.POSIXct(tz = "UTC"))), 
+  #           aes(x = date_time, y = -depth_m), size = .75, colour = 'darkgreen') +
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "1 day",
+    date_breaks = "1 week",
+    date_labels = "%b %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0))
+
+depthlogs_plot
+
+# XWT female shark ####
+
+## CWT 
+cwt_female_plot <- compute_CWT(values = depthlog_female %>% dplyr::select(depth_m_sgolayfilt),
+                               dt = 15 * dt_hours,
+                               factor_smallest_scale = 3) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = 1500)
+
+cwt_female_plot 
+
+# XWT
+xwt_female_12_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                         values1 = depthlog_female %>% dplyr::select(depth_m_sgolayfilt),
+                                                         values2 = generic_signals  %>%
+                                                           dplyr::filter(date_time %>% 
+                                                                           dplyr::between(min(depthlog_female$date_time),
+                                                                                         max(depthlog_female$date_time))) %>% 
+                                                           dplyr::select(depth_m_12),
+                                                         dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
+
+xwt_female_12_plot
+
+xwt_female_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                         values1 = depthlog_female %>% dplyr::select(depth_m_sgolayfilt),
+                                                         values2 = generic_signals  %>%
+                                                           dplyr::filter(date_time %>% 
+                                                                           dplyr::between(min(depthlog_female$date_time),
+                                                                                          max(depthlog_female$date_time))) %>% 
+                                                           dplyr::select(depth_m_24),
+                                                         dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
+
+xwt_female_24_plot
+
+# XWT male shark ####
+
+# CWT
+
+cwt_male_plot <- compute_CWT(values = depthlog_male %>% dplyr::select(depth_m_sgolayfilt),
+                               dt = 15 * dt_hours,
+                               factor_smallest_scale = 3) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = 1500)
+
+cwt_male_plot 
+
+# XWT
+
+xwt_male_12_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                         values1 = depthlog_male %>% dplyr::select(depth_m_sgolayfilt),
+                                                         values2 = generic_signals  %>%
+                                                           dplyr::filter(date_time %>% 
+                                                                           dplyr::between(min(depthlog_male$date_time),
+                                                                                          max(depthlog_male$date_time))) %>% 
+                                                           dplyr::select(depth_m_12),
+                                                         dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
+
+xwt_male_12_plot
+
+xwt_male_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                         values1 = depthlog_male %>% dplyr::select(depth_m_sgolayfilt),
+                                                         values2 = generic_signals  %>%
+                                                           dplyr::filter(date_time %>% 
+                                                                           dplyr::between(min(depthlog_male$date_time),
+                                                                                          max(depthlog_male$date_time))) %>% 
+                                                           dplyr::select(depth_m_24),
+                                                         dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
+
+xwt_male_24_plot
