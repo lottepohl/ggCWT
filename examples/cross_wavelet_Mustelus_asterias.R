@@ -73,12 +73,9 @@ xwt_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
                                                           values1 = generic_signals %>% dplyr::select(depth_m_12),
                                                           values2 = generic_signals %>% dplyr::select(depth_m_24),
                                                           dt = 15 * dt_hours) %>%
-  make_wavelet_df(wavelet_result = .,
-                  date_times = generic_signals %>% dplyr::select(date_time),
-                  dt = 15 * dt_hours) #%>%
-  ggplot_wavelet()
-  
-xwt_12_24_plot <- ggplot_wavelet(xwt_12_24_plot, max_period = 5000)
+  make_wavelet_df(date_times = generic_signals %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
   
 xwt_12_24_plot #%>% View()
 
@@ -86,7 +83,7 @@ cwt_12_plot <- compute_CWT(values = generic_signals %>% dplyr::select(depth_m_12
                            dt = 15 * dt_hours) %>%
   make_wavelet_df(date_times = generic_signals %>% dplyr::select(date_time),
                   dt = 15 * dt_hours) %>%
-  ggplot_wavelet()
+  ggplot_wavelet(max_period = max(.$period))
 
 cwt_12_plot
 
@@ -94,6 +91,8 @@ cwt_24_plot <- compute_CWT(values = generic_signals %>% dplyr::select(depth_m_24
                            dt = 15 * dt_hours) %>%
   make_wavelet_df(date_times = generic_signals %>% dplyr::select(date_time),
                   dt = 15 * dt_hours) %>%
-  ggplot_wavelet()
+  ggplot_wavelet(max_period = max(.$period))
 
 cwt_24_plot
+
+gridExtra::grid.arrange(cwt_12_plot, cwt_24_plot, xwt_12_24_plot, ncol = 1)

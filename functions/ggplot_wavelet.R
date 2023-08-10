@@ -18,34 +18,37 @@ library(ggplot2)
 # date <- TRUE
 # max_period <- 4200
 
-# ## test xwt
+# # ## test xwt
 # wavelet_df <- signals_xwt_df
 # date <- T
-# max_period <- wavelet_df %>% select(period) %>% max()
+# # max_period <- wavelet_df %>% select(period) %>% max()
 # max_period <- NULL
 
-ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
+# TODO: fix bug with `max_period`: when piping `ggplot_wavelet()`, `max_period` should be able to be left emtpy and not return errors
+# potentially has to do with the übergabe von dem dataframe an die funktion, während der Ausführung kann 
+# wsl nicht direkt drauf zugegriffen werden, deswegen kann das max nicht rausgezogen werden
+
+ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = TRUE){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
   
   # change or leave out to make more general
-  wavelet_df <- wavelet_df %>% dplyr::filter(date > (min(wavelet_df$date) + lubridate::days(7))) # cut first week of data off to avoid looking at tagging effect
+  wavelet_df <- wavelet_df %>% dplyr::filter(date %>% dplyr::between((min(wavelet_df$date, na.rm = T) + lubridate::days(7)),
+                                                                     (max(wavelet_df$date, na.rm = T) - lubridate::days(7)))) # cut first and last week of data off to avoid looking at tagging effect
+  # wavelet_df <- wavelet_df %>% dplyr::filter(date > (min(wavelet_df$date, na.rm = T) + lubridate::days(7))) 
   
   # y axis labels
   y_breaks <- 2^floor(log2(wavelet_df$period)) %>% unique()
-  y_breaks <- y_breaks[y_breaks <= max_period]
-
+  
   # filter out the undesired periods, if specified
-  if(is.null(max_period)){
-    max_period <- wavelet_df %>% dplyr::select(period) %>% base::max()
-    }
-     
-  wavelet_df <- wavelet_df %>% dplyr::filter(period <= max_period)
-   
-
+  if(!base::is.null(max_period)){
+    wavelet_df <- wavelet_df %>% dplyr::filter(period <= max_period)
+    y_breaks <- y_breaks[y_breaks <= max_period]
+  }
+  
   # change max and min date to include max x axis label completely --> make customisable
-  max_date <- max(wavelet_df$date) + lubridate::days(10)
-  min_date <- min(wavelet_df$date) -lubridate::days(10)
+  max_date <- max(wavelet_df$date, na.rm = T) + lubridate::days(10)
+  min_date <- min(wavelet_df$date, na.rm = T) -lubridate::days(10)
   
   ifelse(date %>% base::isTRUE(),
                   # for now: plot only power_log
