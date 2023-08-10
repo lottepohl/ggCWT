@@ -12,22 +12,22 @@ library(dplyr)
 library(gridExtra)
 
 # test ###
-
-values1 <- signal_12 %>% 
-  # dplyr::filter(date_time %>% 
-  #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10),
-  #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
-  select(depth_m)
-
-values2 <- signal_12_24 %>% 
-  # dplyr::filter(date_time %>% 
-  #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10), 
-  #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
-  select(depth_m)
-
-dt <- dt_hours * 15 # every 600 min
-factor_smallest_scale <- 2
-type <- "cross wavelet"
+# 
+# values1 <- signal_12 %>% 
+#   # dplyr::filter(date_time %>% 
+#   #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10),
+#   #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
+#   select(depth_m)
+# 
+# values2 <- signal_12_24 %>% 
+#   # dplyr::filter(date_time %>% 
+#   #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10), 
+#   #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
+#   select(depth_m)
+# 
+# dt <- dt_hours * 15 # every 600 min
+# factor_smallest_scale <- 2
+# type <- "cross wavelet"
 
 # 1. compute wavelet coherence ####
 
@@ -63,30 +63,30 @@ compute_bivariate_wavelet_analysis <- function(type = c('cross wavelet', 'wavele
   )
   return(result)
 }
-
-plot(result, plot.phase = F)
-
-# Sample time-series
-noise1 <- cbind(1:100, rnorm(100))
-noise2 <- cbind(1:100, rnorm(100))
-
-# Wavelet Analyses
-wt_noise1 <- wt(noise1)
-wt_noise2 <- wt(noise2)
-xwt_noise12 <- xwt(noise1, noise2)
-wtc_noise12 <- wtc(noise1, noise2)
-
-# Make room to the right for the color bar
-par(oma = c(0, 0, 0, 1), mar = c(5, 4, 4, 5) + 0.1)
-
-plot(wt_noise1, plot.cb = TRUE, plot.phase = F,
-     main = "Continuous Wavelet Transform Noise 1")
-
-plot(wt_noise2, plot.cb = TRUE, plot.phase = F,
-     main = "Continuous Wavelet Transform Noise 2")
-
-plot(xwt_noise12, plot.cb = TRUE, plot.phase = TRUE,
-     main = "Cross wavelet power and phase difference (arrows)")
-
-plot(wtc_noise12, plot.cb = TRUE, plot.phase = TRUE,
-     main = "Wavelet coherence and phase difference (arrows)")
+# 
+# plot(result, plot.phase = F)
+# 
+# # Sample time-series
+# noise1 <- cbind(1:100, rnorm(100))
+# noise2 <- cbind(1:100, rnorm(100))
+# 
+# # Wavelet Analyses
+# wt_noise1 <- wt(noise1)
+# wt_noise2 <- wt(noise2)
+# xwt_noise12 <- xwt(noise1, noise2)
+# wtc_noise12 <- wtc(noise1, noise2)
+# 
+# # Make room to the right for the color bar
+# par(oma = c(0, 0, 0, 1), mar = c(5, 4, 4, 5) + 0.1)
+# 
+# plot(wt_noise1, plot.cb = TRUE, plot.phase = F,
+#      main = "Continuous Wavelet Transform Noise 1")
+# 
+# plot(wt_noise2, plot.cb = TRUE, plot.phase = F,
+#      main = "Continuous Wavelet Transform Noise 2")
+# 
+# plot(xwt_noise12, plot.cb = TRUE, plot.phase = TRUE,
+#      main = "Cross wavelet power and phase difference (arrows)")
+# 
+# plot(wtc_noise12, plot.cb = TRUE, plot.phase = TRUE,
+#      main = "Wavelet coherence and phase difference (arrows)")

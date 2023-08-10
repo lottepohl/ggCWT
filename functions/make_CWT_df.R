@@ -16,75 +16,124 @@ library(purrr)
 library(ggplot2)
 library(tidyr)
 
-###### test ###
-# values <- signal_12_24 %>% select(depth_m)
-# dt <- dt_hours * 15
-# date_times <- signal_12_24 %>% select(date_time)
-# cwt_result <- signal_12_24_CWT
+##### test ###
+values <- signal_12_24 %>% select(depth_m)
+dt <- dt_hours * 15
+date_times <- signal_12_24 %>% select(date_time)
+cwt_result <- signal_12_24_CWT
 
-make_CWT_df <- function(values, date_times, dt, cwt_result){
-  # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")
-  
-  # downsample raw values
-  values_downsampled <- values %>% 
-    dplyr::ungroup() %>%
-    dplyr::filter(dplyr::row_number() %% ((dt * 60) / 2) == 0) # change 60 to allow multiple time scales, explanation: ... %% dt[hour] * 60[min] / 2[min] <- sample interval (every 2 min), e.g. for dt_smallperiods = 1: ...%% 30 (i.e. get every 30th val)
- 
+make_CWT_df <- function(date_times, dt, cwt_result){
+
   # downsample date_times
   date_times_downsampled <- date_times %>% 
     dplyr::ungroup() %>%
-    dplyr::filter(dplyr::row_number() %% ((dt * 60) / 2) == 0) # change 60 to allow multiple time scales, explanation: ... %% dt[hour] * 60[min] / 2[min] <- sample interval (every 2 min), e.g. for dt_smallperiods = 1: ...%% 30 (i.e. get every 30th val)
-  
-  # combine downsampled date_times and values
-  data_downsampled <- dplyr::tibble(values_downsampled,
-                                    date_times_downsampled) %>%
-    `colnames<-`(c("values_downsampled", "date_times_downsampled"))
-  
+    dplyr::filter(dplyr::row_number() %% ((dt * 60) / 2) == 0) %>% # change 60 to allow multiple time scales, explanation: ... %% dt[hour] * 60[min] / 2[min] <- sample interval (every 2 min), e.g. for dt_smallperiods = 1: ...%% 30 (i.e. get every 30th val)
+    `colnames<-`("date_times_downsampled") # round brackets == obligatory
   
   # make time vector according to nrow() of parameter and given dt
-  timevector <- base::seq(from = 0, to = (nrow(data_downsampled) * dt) - dt, by = dt)
+  timevector <- base::seq(from = 0, to = (nrow(date_times_downsampled) * dt) - dt, by = dt)
   
-  dates <- data_downsampled %>% dplyr::select(date_times_downsampled) %>% 
+  dates <- date_times_downsampled %>% 
     dplyr::mutate(t = timevector,
-           date = date_times_downsampled %>% lubridate::date() %>% as.POSIXct.Date(), #sum by day
-           date_times_character= date_times_downsampled %>% as.character())
+                  date_times_character= date_times_downsampled %>% as.character())
   
   # extract important results
   period <- cwt_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
   xaxis <- cwt_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
   signif <- cwt_result$signif %>% base::as.data.frame() %>%
-    purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
-    # purrr::set_names(as.character(date_times$date)) %>% #sum by day, but not yet
+    purrr::set_names(dates$date_times_character) %>%
     base::cbind(period) %>%
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% #don't pivot the last column
-    dplyr::rename(significance = value) #%>%
-    # mutate(date_times_downsampled = date_times_downsampled %>% base::as.POSIXct())
+    dplyr::rename(significance = value) 
   
-  # cwt_df <- cwt_result$power.corr %>% base::as.data.frame() %>%
   cwt_df <- cwt_result$power %>% base::as.data.frame() %>%
-    purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
-    # purrr::set_names(as.character(date_times$date)) %>% #sum by day
+    purrr::set_names(dates$date_times_character) %>%
     base::cbind(period) %>%
-    # mutate(period_log = log2(period))# %>%
     dplyr::arrange(desc(period))
   
   cwt_df <- cwt_df %>%
-    # tidyr::pivot_longer(cols = -c(last_col(offset = 1), last_col(offset = 0)), names_to = "date_time") %>% #don't pivot the two last columns
     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% 
     dplyr::rename(power = value) %>% 
-    # relocate(date, period, power) %>%
     dplyr::left_join(dates, by = "date_times_character", multiple = "all") %>%
     dplyr::left_join(signif, by = c("period", "date_times_character"), multiple = "all") %>% #View()
+    dplyr::mutate(date = date_times_downsampled %>% lubridate::date() %>% as.POSIXct.Date()) %>%
     dplyr::group_by(date, period) %>%
     dplyr::summarise(power = power %>% max(),
-              significance = significance %>% max(),
-              t = t %>% max()) %>%
+                     significance = significance %>% max(),
+                     t = t %>% max()) %>%
     dplyr::mutate(power_log = log2(power),
-           power_log_scale = power_log %>% scale(),
-           period_log = log2(period),
-           t = sprintf("%04f", t %>% as.numeric()),
-           sig = ifelse(significance >= 1, 1, 0)) %>%
+                  power_log_scale = power_log %>% scale(),
+                  period_log = log2(period),
+                  t = sprintf("%04f", t %>% as.numeric()),
+                  sig = ifelse(significance >= 1, 1, 0)) %>%
     dplyr::ungroup()
   
   return(cwt_df)
 }
+
+# make_CWT_df <- function(values, date_times, dt, cwt_result){
+#   # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")
+#   
+#   # downsample raw values
+#   values_downsampled <- values %>% 
+#     dplyr::ungroup() %>%
+#     dplyr::filter(dplyr::row_number() %% ((dt * 60) / 2) == 0) # change 60 to allow multiple time scales, explanation: ... %% dt[hour] * 60[min] / 2[min] <- sample interval (every 2 min), e.g. for dt_smallperiods = 1: ...%% 30 (i.e. get every 30th val)
+#  
+#   # downsample date_times
+#   date_times_downsampled <- date_times %>% 
+#     dplyr::ungroup() %>%
+#     dplyr::filter(dplyr::row_number() %% ((dt * 60) / 2) == 0) # change 60 to allow multiple time scales, explanation: ... %% dt[hour] * 60[min] / 2[min] <- sample interval (every 2 min), e.g. for dt_smallperiods = 1: ...%% 30 (i.e. get every 30th val)
+#   
+#   # combine downsampled date_times and values
+#   data_downsampled <- dplyr::tibble(values_downsampled,
+#                                     date_times_downsampled) %>%
+#     `colnames<-`(c("values_downsampled", "date_times_downsampled"))
+#   
+#   
+#   # make time vector according to nrow() of parameter and given dt
+#   timevector <- base::seq(from = 0, to = (nrow(data_downsampled) * dt) - dt, by = dt)
+#   
+#   dates <- data_downsampled %>% dplyr::select(date_times_downsampled) %>% 
+#     dplyr::mutate(t = timevector,
+#            date = date_times_downsampled %>% lubridate::date() %>% as.POSIXct.Date(), #sum by day
+#            date_times_character= date_times_downsampled %>% as.character())
+#   
+#   # extract important results
+#   period <- cwt_result$period %>% base::as.data.frame() %>% `colnames<-`("period")
+#   xaxis <- cwt_result$xaxis %>% base::as.data.frame() %>% `colnames<-`("time")
+#   signif <- cwt_result$signif %>% base::as.data.frame() %>%
+#     purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
+#     # purrr::set_names(as.character(date_times$date)) %>% #sum by day, but not yet
+#     base::cbind(period) %>%
+#     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% #don't pivot the last column
+#     dplyr::rename(significance = value) #%>%
+#     # mutate(date_times_downsampled = date_times_downsampled %>% base::as.POSIXct())
+#   
+#   # cwt_df <- cwt_result$power.corr %>% base::as.data.frame() %>%
+#   cwt_df <- cwt_result$power %>% base::as.data.frame() %>%
+#     purrr::set_names(base::as.character(data_downsampled$date_times_downsampled)) %>%
+#     # purrr::set_names(as.character(date_times$date)) %>% #sum by day
+#     base::cbind(period) %>%
+#     # mutate(period_log = log2(period))# %>%
+#     dplyr::arrange(desc(period))
+#   
+#   cwt_df <- cwt_df %>%
+#     # tidyr::pivot_longer(cols = -c(last_col(offset = 1), last_col(offset = 0)), names_to = "date_time") %>% #don't pivot the two last columns
+#     tidyr::pivot_longer(cols = -last_col(offset = 0), names_to = "date_times_character") %>% 
+#     dplyr::rename(power = value) %>% 
+#     # relocate(date, period, power) %>%
+#     dplyr::left_join(dates, by = "date_times_character", multiple = "all") %>%
+#     dplyr::left_join(signif, by = c("period", "date_times_character"), multiple = "all") %>% #View()
+#     dplyr::group_by(date, period) %>%
+#     dplyr::summarise(power = power %>% max(),
+#               significance = significance %>% max(),
+#               t = t %>% max()) %>%
+#     dplyr::mutate(power_log = log2(power),
+#            power_log_scale = power_log %>% scale(),
+#            period_log = log2(period),
+#            t = sprintf("%04f", t %>% as.numeric()),
+#            sig = ifelse(significance >= 1, 1, 0)) %>%
+#     dplyr::ungroup()
+#   
+#   return(cwt_df)
+# }

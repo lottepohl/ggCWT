@@ -5,16 +5,17 @@ library(dplyr)
 library(ggplot2)
 # library(tibble)
 
-# load functions
+# 0. load functions
 
 base::paste0(base::getwd(), "/functions/compute_CWT.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/make_CWT_df.R") %>% base::source()
 base::paste0(base::getwd(), "/functions/plot_CWT_ggplot.R") %>% base::source()
+base::paste0(base::getwd(), "/functions/compute_bivariate_wavelet_analysis.R") %>% base::source()
 
 # plot language == English
 Sys.setlocale("LC_TIME", "English")
 
-# 0. set plot theme ####
+## set plot theme ####
 
 ## theme ####
 
@@ -123,13 +124,11 @@ signal_12_24_CWT <- compute_CWT(values = signal_12_24 %>% select(depth_m),
 
 # 3. `make_CWT_df()` example ####
 
-signal_12_CWT_df <- make_CWT_df(values = signal_12 %>% dplyr::select(depth_m),
-                             date_times = signal_12 %>% dplyr::select(date_time),
+signal_12_CWT_df <- make_CWT_df(date_times = signal_12 %>% dplyr::select(date_time),
                              dt = dt_hours * 15,
                              cwt_result = signal_12_CWT)
 
-signal_12_24_CWT_df <- make_CWT_df(values = signal_12_24 %>% dplyr::select(depth_m),
-                                   date_times = signal_12_24 %>% dplyr::select(date_time),
+signal_12_24_CWT_df <- make_CWT_df(date_times = signal_12_24 %>% dplyr::select(date_time),
                                    dt = dt_hours * 15,
                                    cwt_result = signal_12_24_CWT)
 
@@ -148,3 +147,32 @@ signal_12_24_CWT_plot
 # save plots
 ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_CWT_plot.png"), plot = signal_12_CWT_plot + theme_bw(base_size = 5))
 ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_24_CWT_plot.png"), plot = signal_12_24_CWT_plot + theme_bw(base_size = 5))
+
+# 4. compute cross wavelet analysis ####
+
+signals_xwt <- compute_bivariate_wavelet_analysis(type = 'cross wavelet',
+                                                  values1 = signal_12 %>% 
+                                                    dplyr::filter(date_time %>%
+                                                                    between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                                                            (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
+                                                    select(depth_m),
+                                                  values2 = signal_12_24 %>% 
+                                                    dplyr::filter(date_time %>%
+                                                                    between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                                                            (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
+                                                    select(depth_m),
+                                                  dt = dt_hours * 15,
+                                                  factor_smallest_scale = 4) 
+
+signals_xwt_df <- make_CWT_df(date_times = signal_12 %>% 
+                                dplyr::filter(date_time %>%
+                                                between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                                        (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>% 
+                                dplyr::select(date_time),
+                                dt = dt_hours * 15,
+                                cwt_result = signals_xwt)
+
+signals_xwt_plot <- plot_CWT_ggplot(cwt_df = signals_xwt_df,
+                                      date = T,
+                                      max_period = signals_xwt_df %>% dplyr::select(period) %>% max()) # signal_12_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
+signals_xwt_plot

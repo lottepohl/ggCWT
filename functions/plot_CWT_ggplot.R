@@ -18,6 +18,12 @@ library(ggplot2)
 # date <- TRUE
 # max_period <- 4200
 
+# ## test xwt
+# cwt_df <- signals_xwt_df
+# date <- T
+# max_period <- cwt_df %>% select(period) %>% max()
+
+
 plot_CWT_ggplot <- function(cwt_df, date = TRUE, max_period){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
