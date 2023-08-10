@@ -383,3 +383,4 @@ gridExtra::grid.arrange(xwt_female_12_24_plot,
 # To do morgen:
 # ploth mit both in 3 kategorien einteilen: beide, nur female, nur male,
 # und das ist dann das endergebnis. dann alle plots schön abspeichern und in ne Präsi hauen
+# und rausfinden wie ich die random funktion generiere, evtl. mit for-loops
