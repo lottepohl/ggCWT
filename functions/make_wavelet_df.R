@@ -22,7 +22,7 @@ library(tidyr)
 # date_times <- signal_12_24 %>% select(date_time)
 # wavelet_result <- signal_12_24_cwt
 
-make_wavelet_df <- function(date_times, dt, wavelet_result){
+make_wavelet_df <- function(wavelet_result, date_times, dt){
 
   # downsample date_times
   date_times_downsampled <- date_times %>% 

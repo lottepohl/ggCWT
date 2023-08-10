@@ -31,8 +31,9 @@ library(gridExtra)
 
 # 1. compute wavelet coherence ####
 
-compute_bivariate_wavelet_analysis <- function(type = c('cross wavelet', 'wavelet coherence'), 
-                                               values1, values2, dt, factor_smallest_scale = 8){
+compute_bivariate_wavelet_analysis <- function(values1, values2,
+                                               type = c('cross wavelet', 'wavelet coherence'),
+                                               dt, factor_smallest_scale = 8){
   # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")
   
   # downsample raw values

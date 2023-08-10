@@ -22,9 +22,9 @@ library(ggplot2)
 # wavelet_df <- signals_xwt_df
 # date <- T
 # max_period <- wavelet_df %>% select(period) %>% max()
+# max_period <- NULL
 
-
-ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period){
+ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
   
@@ -35,9 +35,14 @@ ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period){
   y_breaks <- 2^floor(log2(wavelet_df$period)) %>% unique()
   y_breaks <- y_breaks[y_breaks <= max_period]
 
-  # filter out the undesired periods
-  wavelet_df <- wavelet_df %>% dplyr::filter(period <= max_period) 
-  
+  # filter out the undesired periods, if specified
+  if(is.null(max_period)){
+    max_period <- wavelet_df %>% dplyr::select(period) %>% base::max()
+    }
+     
+  wavelet_df <- wavelet_df %>% dplyr::filter(period <= max_period)
+   
+
   # change max and min date to include max x axis label completely --> make customisable
   max_date <- max(wavelet_df$date) + lubridate::days(10)
   min_date <- min(wavelet_df$date) -lubridate::days(10)
