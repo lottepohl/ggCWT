@@ -146,4 +146,5 @@ signal_12_CWT_plot
 signal_12_24_CWT_plot
 
 # save plots
-ggplot2::ggsave()
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_CWT_plot.png"), plot = signal_12_CWT_plot + theme_bw(base_size = 5))
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_24_CWT_plot.png"), plot = signal_12_24_CWT_plot + theme_bw(base_size = 5))

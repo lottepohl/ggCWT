@@ -14,23 +14,25 @@ library(gridExtra)
 # test ###
 
 values1 <- signal_12 %>% 
-  dplyr::filter(date_time %>% 
-                  between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10),
-                          (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
+  # dplyr::filter(date_time %>% 
+  #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10),
+  #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
   select(depth_m)
 
 values2 <- signal_12_24 %>% 
-  dplyr::filter(date_time %>% 
-                  between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10), 
-                          (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
+  # dplyr::filter(date_time %>% 
+  #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10), 
+  #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10))) %>%
   select(depth_m)
 
-dt <- dt_hours * 30 # every 600 min
-factor_smallest_scale <- 4
+dt <- dt_hours * 15 # every 600 min
+factor_smallest_scale <- 2
+type <- "cross wavelet"
 
 # 1. compute wavelet coherence ####
 
-compute_wavelet_coherence <- function(values1, values2, dt, factor_smallest_scale = 8){
+compute_bivariate_wavelet_analysis <- function(type = c('cross wavelet', 'wavelet coherence'), 
+                                               values1, values2, dt, factor_smallest_scale = 8){
   # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")
   
   # downsample raw values
@@ -46,15 +48,45 @@ compute_wavelet_coherence <- function(values1, values2, dt, factor_smallest_scal
   timevector <- base::seq(from = 0, to = (base::nrow(values1_downsampled) * dt) - dt, by = dt)
   wtc_input1 <- base::cbind(timevector, values1_downsampled) %>% base::as.matrix()
   wtc_input2 <- base::cbind(timevector, values2_downsampled) %>% base::as.matrix()
-  # make wt result
-  wtc <- biwavelet::wtc(d1 = wtc_input1,
+  
+  # make  result
+  ifelse(type == 'cross wavelet',
+         # compute cross wavelet
+  result <- biwavelet::xwt(d1 = wtc_input1,
                         d2 = wtc_input2,
                         s0 = factor_smallest_scale * dt) # this specifies the scale at which periods are looked at
+  ,     # compute wavelet coherence 
+  result <- biwavelet::wtc(d1 = wtc_input1,
+                           d2 = wtc_input2,
+                           s0 = factor_smallest_scale * dt) # this specifies the scale at which periods are looked at
   
-  return(cwt)
+  )
+  return(result)
 }
 
-plot(wtc, plot.phase = TRUE)
+plot(result, plot.phase = F)
 
-gridExtra::grid.arrange(signal_12_CWT_plot, signal_12_24_CWT_plot, plot(wtc, plot.phase = TRUE))
+# Sample time-series
+noise1 <- cbind(1:100, rnorm(100))
+noise2 <- cbind(1:100, rnorm(100))
 
+# Wavelet Analyses
+wt_noise1 <- wt(noise1)
+wt_noise2 <- wt(noise2)
+xwt_noise12 <- xwt(noise1, noise2)
+wtc_noise12 <- wtc(noise1, noise2)
+
+# Make room to the right for the color bar
+par(oma = c(0, 0, 0, 1), mar = c(5, 4, 4, 5) + 0.1)
+
+plot(wt_noise1, plot.cb = TRUE, plot.phase = F,
+     main = "Continuous Wavelet Transform Noise 1")
+
+plot(wt_noise2, plot.cb = TRUE, plot.phase = F,
+     main = "Continuous Wavelet Transform Noise 2")
+
+plot(xwt_noise12, plot.cb = TRUE, plot.phase = TRUE,
+     main = "Cross wavelet power and phase difference (arrows)")
+
+plot(wtc_noise12, plot.cb = TRUE, plot.phase = TRUE,
+     main = "Wavelet coherence and phase difference (arrows)")
