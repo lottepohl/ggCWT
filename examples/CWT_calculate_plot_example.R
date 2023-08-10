@@ -8,9 +8,44 @@ library(ggplot2)
 # load functions
 
 base::paste0(base::getwd(), "/functions/compute_CWT.R") %>% base::source()
+base::paste0(base::getwd(), "/functions/make_CWT_df.R") %>% base::source()
 
 # plot language == English
 Sys.setlocale("LC_TIME", "English")
+
+# 0. set plot theme ####
+
+## theme ####
+
+plot_theme <- ggplot2::theme(
+  plot.title = element_text(size = 11, face = "bold"),
+  plot.subtitle = element_text(size = 11),
+  axis.title = element_text(size = 11),
+  axis.text = element_text(size = 9), #5.5
+  legend.title = element_text(size = 9),
+  legend.text = element_text(size = 9),
+  legend.key = element_rect(fill = "transparent", colour = "transparent"),
+  # legend.key.width = unit(2, "cm"),
+  legend.margin = margin(t = -10, b = -10, r = -10, l = -10),
+  plot.tag = element_text(face = "bold", size = 12),
+  # plot.tag.position =  c(0.065, 0.96), #"topleft", 
+  plot.tag.position =  c(0.01, 0.98), #"topleft", 
+  plot.background = element_blank(),
+  panel.background = element_blank(),
+  legend.box.background = element_blank(),
+  legend.background = element_blank(),
+  panel.border = element_rect(color = "black", fill = NA, size = 0.5),
+  # panel.background = element_rect(fill = "transparent"),
+  panel.grid.major = element_line(color = "gray40", linetype = "solid", size = 0.5),
+  panel.grid.minor = element_line(color = "gray60", linetype = "dashed", size = 0.35),
+  strip.background = element_blank(),
+  strip.background.x = element_blank(),
+  strip.background.y = element_blank(),
+  strip.text = element_text() #face = "bold", 
+)
+
+# Set the theme as the default for all plots
+ggplot2::theme_set(plot_theme)
 
 # 1. create example signal ####
 
@@ -50,12 +85,15 @@ signal_plot_subset <- ggplot2::ggplot() +
 
 signal_plot_subset + theme_bw()
 
-# 2. `compute_CWT` example
+# 2. `compute_CWT()` example
 
 signal_CWT <- compute_CWT(values = signal %>% select(depth_m),
                           dt = dt_hours * 15, # every 30 min
                           factor_smallest_scale = 8) # test different vals
 
-#### test ###
-values <- signal %>% select(depth_m)
-dt <- dt_hours * 15 # every 30 min
+# 3. `make_CWT_df()` example
+
+signal_CWT_df <- make_CWT_df(values = signal %>% dplyr::select(depth_m),
+                             date_times = signal %>% dplyr::select(date_time),
+                             dt = dt_hours * 15,
+                             cwt_result = signal_CWT)
