@@ -64,10 +64,7 @@ signal_12 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
                               depth_m = 10 * (sin((4 * pi)*t) - 1),
                               date_time = seq(signal_start_date,
                                               signal_start_date + lubridate::days(signal_length_days),
-                                              length.out = base::length(t))) #%>%
-  # dplyr::mutate(depth_m = ifelse(date_time > signal_start_date + lubridate::days(signal_length_days / 2),
-  #                                10 * (sin((2 * pi)*t) - 1),
-  #                                depth_m))
+                                              length.out = base::length(t))) 
 
 ## 12 and 24h periods ####
 
@@ -141,9 +138,12 @@ signal_12_24_CWT_df <- make_CWT_df(values = signal_12_24 %>% dplyr::select(depth
 signal_12_CWT_plot <- plot_CWT_ggplot(cwt_df = signal_12_CWT_df,
                                    date = T,
                                    max_period = signal_12_CWT_df %>% dplyr::select(period) %>% max()) # signal_12_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
-signal_12_CWT_plot
 
 signal_12_24_CWT_plot <- plot_CWT_ggplot(cwt_df = signal_12_24_CWT_df,
                                          date = T,
                                          max_period = signal_12_24_CWT_df %>% dplyr::select(period) %>% max()) # signal_12_24_CWT_df %>% dplyr::select(period) %>% max() %>% round(digits = -2)
+signal_12_CWT_plot
 signal_12_24_CWT_plot
+
+# save plots
+ggplot2::ggsave()

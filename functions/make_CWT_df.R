@@ -17,10 +17,10 @@ library(ggplot2)
 library(tidyr)
 
 ###### test ###
-values <- signal %>% select(depth_m)
-dt <- dt_hours * 15
-date_times <- signal %>% select(date_time)
-cwt_result <- signal_CWT
+# values <- signal_12_24 %>% select(depth_m)
+# dt <- dt_hours * 15
+# date_times <- signal_12_24 %>% select(date_time)
+# cwt_result <- signal_12_24_CWT
 
 make_CWT_df <- function(values, date_times, dt, cwt_result){
   # To Do: test that class(values) %in% c("tbl_df", "tbl", data.frame")

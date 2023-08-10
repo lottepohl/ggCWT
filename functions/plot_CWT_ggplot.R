@@ -14,9 +14,9 @@ library(dplyr)
 library(ggplot2)
 
 # test
-cwt_df <- signal_CWT_df
-date <- TRUE
-max_period <- 4200
+# cwt_df <- signal_CWT_df
+# date <- TRUE
+# max_period <- 4200
 
 plot_CWT_ggplot <- function(cwt_df, date = TRUE, max_period){
   # transformation function for the y axis
