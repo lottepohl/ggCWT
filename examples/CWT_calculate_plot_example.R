@@ -152,22 +152,22 @@ ggplot2::ggsave(filename = base::paste0(base::getwd(), "/plots/signal_12_24_CWT_
 
 signals_xwt <- compute_bivariate_wavelet_analysis(type = 'cross wavelet',
                                                   values1 = signal_12 %>% 
-                                                    dplyr::filter(date_time %>%
-                                                                    between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
-                                                                            (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
+                                                    # dplyr::filter(date_time %>%
+                                                    #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                                    #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
                                                     select(depth_m),
                                                   values2 = signal_12_24 %>% 
-                                                    dplyr::filter(date_time %>%
-                                                                    between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
-                                                                            (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
+                                                    # dplyr::filter(date_time %>%
+                                                                    # between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                                                    #         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>%
                                                     select(depth_m),
                                                   dt = dt_hours * 15,
                                                   factor_smallest_scale = 4) 
 
 signals_xwt_df <- make_CWT_df(date_times = signal_12 %>% 
-                                dplyr::filter(date_time %>%
-                                                between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
-                                                        (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>% 
+                                # dplyr::filter(date_time %>%
+                                #                 between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(30),
+                                #                         (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(30))) %>% 
                                 dplyr::select(date_time),
                                 dt = dt_hours * 15,
                                 cwt_result = signals_xwt)
