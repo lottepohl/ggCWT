@@ -51,8 +51,8 @@ ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL, opacity =
   }
   
   # change max and min date to include max x axis label completely --> make customisable
-  max_date <- max(wavelet_df$date, na.rm = T) + lubridate::days(0)
-  min_date <- min(wavelet_df$date, na.rm = T) -lubridate::days(0)
+  max_date <- max(wavelet_df$date, na.rm = T) + lubridate::days(10)
+  min_date <- min(wavelet_df$date, na.rm = T) -lubridate::days(10)
   
   ifelse(date %>% base::isTRUE(),
                   # for now: plot only power_log

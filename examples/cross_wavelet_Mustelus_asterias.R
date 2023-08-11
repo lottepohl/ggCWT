@@ -172,12 +172,12 @@ xwt_12_12_24_plot #%>% View()
 ## load depthlogs ####
 depthlog_female <- load_data(filestring = "depthlog_female", folder = base::paste0(base::getwd(), "/examples/data/")) %>%
   # dplyr::mutate(depth_m_sgolayfilt = depth_m %>% signal::sgolayfilt(p = 3, n = 9))
-  dplyr::mutate(depth_m_raw = depth_m,
+  dplyr::mutate(depth_m = depth_m,
                 depth_m = base::scale(depth_m))
 
 depthlog_male <- load_data(filestring = "depthlog_male", folder = base::paste0(base::getwd(), "/examples/data/")) %>%
   # dplyr::mutate(depth_m_sgolayfilt = depth_m %>% signal::sgolayfilt(p = 3, n = 9))
-  dplyr::mutate(depth_m_raw = depth_m,
+  dplyr::mutate(depth_m = depth_m,
                 depth_m = base::scale(depth_m))
 
 # plot depthlogs ####
@@ -220,7 +220,7 @@ cwt_female_plot <- compute_CWT(values = depthlog_female %>% dplyr::select(depth_
 cwt_female_plot 
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_female_plot.png"), plot = cwt_female_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_female_plot.png"), plot = cwt_female_plot, width = 13, height = 7, units = "cm")
 
 
 # XWT
@@ -240,7 +240,7 @@ xwt_female_12_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
 xwt_female_12_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_plot.png"), plot = xwt_female_12_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_plot.png"), plot = xwt_female_12_plot, width = 13, height = 7, units = "cm")
 
 
 xwt_female_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
@@ -259,7 +259,7 @@ xwt_female_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
 xwt_female_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_24_plot.png"), plot = xwt_female_24_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_24_plot.png"), plot = xwt_female_24_plot, width = 13, height = 7, units = "cm")
 
 
 xwt_female_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
@@ -278,7 +278,7 @@ xwt_female_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavele
 xwt_female_12_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_24_plot.png"), plot = xwt_female_12_24_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_24_plot.png"), plot = xwt_female_12_24_plot, width = 13, height = 7, units = "cm")
 
 
 # XWT male shark ####
@@ -290,12 +290,13 @@ cwt_male_plot <- compute_CWT(values = depthlog_male %>% dplyr::select(depth_m),
                                factor_smallest_scale = 8) %>%
   make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
                   dt = 15 * dt_hours,
-                  signif_level = 0.75) %>%
-  ggplot_wavelet(max_period = 70)
+                  signif_level = 0.9999) %>%
+  ggplot_wavelet(max_period = 150,
+                 opacity = 0.8)
 
 cwt_male_plot 
 
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_male_plot.png"), plot = cwt_male_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_male_plot.png"), plot = cwt_male_plot, width = 13, height = 7, units = "cm")
 
 # XWT
 
@@ -315,7 +316,7 @@ xwt_male_12_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
 xwt_male_12_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_plot.png"), plot = xwt_male_12_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_plot.png"), plot = xwt_male_12_plot, width = 13, height = 7, units = "cm")
 
 
 xwt_male_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
@@ -334,7 +335,7 @@ xwt_male_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
 xwt_male_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_24_plot.png"), plot = xwt_male_24_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_24_plot.png"), plot = xwt_male_24_plot, width = 13, height = 7, units = "cm")
 
 
 xwt_male_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
@@ -361,7 +362,7 @@ xwt_male_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet"
 xwt_male_12_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_24_plot.png"), plot = xwt_male_12_24_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_24_plot.png"), plot = xwt_male_12_24_plot, width = 13, height = 7, units = "cm")
 
 
 # gridExtra::grid.arrange(xwt_female_12_plot, xwt_male_12_plot,
@@ -415,7 +416,7 @@ xwt_both_12_24_plot <- ggplot_wavelet(wavelet_df = xwt_both_12_24_df, max_period
 xwt_both_12_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_both_12_24_plot.png"), plot = xwt_both_12_24_plot)
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_both_12_24_plot.png"), plot = xwt_both_12_24_plot, width = 13, height = 7, units = "cm")
 
 gridExtra::grid.arrange(xwt_female_12_24_plot,
                         xwt_male_12_24_plot,
@@ -426,4 +427,223 @@ gridExtra::grid.arrange(xwt_female_12_24_plot,
 # und das ist dann das endergebnis. dann alle plots schön abspeichern und in ne Präsi hauen
 # und rausfinden wie ich die random funktion generiere, evtl. mit for-loops
 
+
+# MIGRATION ####
+cwt_female_plot
+cwt_male_plot
+
+# tweak sig in the dataframes
+
+cwt_female_df <- compute_CWT(values = depthlog_female %>% dplyr::select(depth_m),
+                               dt = 15 * dt_hours,
+                               factor_smallest_scale = 8) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.9999)
+
+# calculate cutoff significance percentile value
+signif_level_val_f <- stats::quantile(cwt_female_df$power_log, probs = 2/3)
+signif_level_val_f
+
+cwt_female_df_migration <- cwt_female_df %>%
+  dplyr::mutate(sig = ifelse(power_log >= signif_level_val_f & period > 64, 1, 0))
+
+female_migration <- cwt_female_df_migration %>%
+  ggplot_wavelet(max_period = 150,
+                 opacity = 0.6)
+female_migration
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/female_migration.png"), plot = female_migration, width = 13, height = 7, units = "cm")
+
+
+cwt_male_df <- compute_CWT(values = depthlog_male %>% dplyr::select(depth_m),
+                             dt = 15 * dt_hours,
+                             factor_smallest_scale = 8) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.9999)
+
+signif_level_val_m <- stats::quantile(cwt_male_df$power_log, probs = 2/3) #power_log lies in the highest third
+signif_level_val_m
+
+cwt_male_df_migration <- cwt_male_df %>%
+  dplyr::mutate(sig = ifelse(power_log >= signif_level_val_m & period > 50, 1, 0))
+
+male_migration <- cwt_male_df_migration %>%
+  ggplot_wavelet(max_period = 150,
+                 opacity = 0.6)
+
+male_migration
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/male_migration.png"), plot = male_migration, width = 13, height = 7, units = "cm")
+
+# behavioural states together ####
+
+# female ####
+
+cwt_female_plot # this is the base layer where all will be plotted on top of
+
+xwt_female_12_24_sig_df <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                            values1 = depthlog_female %>% dplyr::select(depth_m),
+                                                            values2 = generic_signals  %>%
+                                                              dplyr::filter(date_time %>% 
+                                                                              dplyr::between(min(depthlog_female$date_time),
+                                                                                             max(depthlog_female$date_time))) %>% 
+                                                              dplyr::select(depth_m_12_24),
+                                                            dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.95) %>%
+  dplyr::filter(sig == 1)
+
+female_behaviour_df <- xwt_female_12_24_sig_df  %>%
+  dplyr::mutate(resting_12h = ifelse(period < 16, 1, NA),
+                DVM_24h = ifelse(period > 16, 1, NA),
+                migration_power_twothirds = NA)
+
+cwt_female_df_migration_sig <- cwt_female_df_migration %>% 
+  dplyr::filter(sig == 1, period < 150) %>%
+  dplyr::mutate(resting_12h = NA,
+                DVM_24h = NA,
+                migration_power_twothirds = 1)
+
+female_behaviour_df <- female_behaviour_df %>%
+  rbind(cwt_female_df_migration_sig) 
+  # left_join(cwt_female_df_migration_sig, by = c("date", "period")) #, "migration_power_twothirds"))
+
+behaviours_cwt_female_plot <- cwt_female_plot +
+  geom_tile(data = female_behaviour_df %>% dplyr::filter(resting_12h == 1),
+            aes(x = date, y = period),
+            fill = 'grey15',
+            position = "identity",
+            alpha = 1)  +
+  geom_tile(data = female_behaviour_df %>% dplyr::filter(DVM_24h == 1),
+            aes(x = date, y = period),
+            fill = 'grey50',
+            position = "identity",
+            alpha = 1) +
+  geom_tile(data = female_behaviour_df %>% dplyr::filter(migration_power_twothirds == 1),
+            aes(x = date, y = period),
+            fill = 'grey85',
+            position = "identity",
+            alpha = 1)
+
+behaviours_cwt_female_plot
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_cwt_female_plot.png"), plot = behaviours_cwt_female_plot, width = 13, height = 7, units = "cm")
+
+female_behaviour_day_df <- female_behaviour_df %>%
+  dplyr::group_by(date) %>%
+  dplyr::summarise(resting = ifelse(isTRUE(1 %in%(resting_12h %>% unique())), 1, NA),
+                   DVM = ifelse(isTRUE(1 %in%(DVM_24h %>% unique())), 1, NA),
+                   migrating = ifelse(isTRUE(1 %in%(migration_power_twothirds %>% unique())), 1, NA))
+
+female_behaviour_day_df_long <- female_behaviour_day_df %>%
+  pivot_longer(!date, names_to = "behaviour", values_to = "presence") %>%
+  dplyr::mutate(presence = ifelse(presence == 1, T, F),
+                presence = ifelse(is.na(presence), F, T),
+                behaviour = factor(behaviour, levels = c('migrating', 'DVM', 'resting')))
+
+female_behaviours_tiles <- ggplot(data = female_behaviour_day_df_long) +
+  geom_tile(aes(x = date, y = behaviour, fill = presence)) +
+  scale_fill_manual(values = c('grey80', '#F06848')) +
+  # scale_fill_manual(values = c('grey80', 'grey20')) +
+  scale_x_datetime(date_breaks = "month", date_labels = "%b %y", expand = c(0,0)) +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = -5),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) +
+  scale_y_discrete(expand = c(0,0)) +
+  theme(axis.text.x = element_text(angle = 15, hjust = 0.5))
+
+female_behaviours_tiles
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/female_behaviours_tiles.png"), plot = female_behaviours_tiles, width = 13, height = 4.5, units = "cm")
+
+
+
+# male ####
+
+cwt_male_plot # this is the base layer where all will be plotted on top of
+
+xwt_male_12_24_sig_df <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                              values1 = depthlog_male %>% dplyr::select(depth_m),
+                                                              values2 = generic_signals  %>%
+                                                                dplyr::filter(date_time %>% 
+                                                                                dplyr::between(min(depthlog_male$date_time),
+                                                                                               max(depthlog_male$date_time))) %>% 
+                                                                dplyr::select(depth_m_12_24),
+                                                              dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.95) %>%
+  dplyr::filter(sig == 1)
+
+male_behaviour_df <- xwt_male_12_24_sig_df  %>%
+  dplyr::mutate(resting_12h = ifelse(period < 16, 1, NA),
+                DVM_24h = ifelse(period > 16, 1, NA),
+                migration_power_twothirds = NA)
+
+cwt_male_df_migration_sig <- cwt_male_df_migration %>% 
+  dplyr::filter(sig == 1, period < 150) %>%
+  dplyr::mutate(resting_12h = NA,
+                DVM_24h = NA,
+                migration_power_twothirds = 1)
+
+male_behaviour_df <- male_behaviour_df %>%
+  rbind(cwt_male_df_migration_sig) 
+# left_join(cwt_male_df_migration_sig, by = c("date", "period")) #, "migration_power_twothirds"))
+
+behaviours_cwt_male_plot <- cwt_male_plot +
+  geom_tile(data = male_behaviour_df %>% dplyr::filter(resting_12h == 1),
+            aes(x = date, y = period),
+            fill = 'grey15',
+            position = "identity",
+            alpha = 1)  +
+  geom_tile(data = male_behaviour_df %>% dplyr::filter(DVM_24h == 1),
+            aes(x = date, y = period),
+            fill = 'grey50',
+            position = "identity",
+            alpha = 1) +
+  geom_tile(data = male_behaviour_df %>% dplyr::filter(migration_power_twothirds == 1),
+            aes(x = date, y = period),
+            fill = 'grey85',
+            position = "identity",
+            alpha = 1)
+
+behaviours_cwt_male_plot
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_cwt_male_plot.png"), plot = behaviours_cwt_male_plot, width = 13, height = 7, units = "cm")
+
+male_behaviour_day_df <- male_behaviour_df %>%
+  dplyr::group_by(date) %>%
+  dplyr::summarise(resting = ifelse(isTRUE(1 %in%(resting_12h %>% unique())), 1, NA),
+                   DVM = ifelse(isTRUE(1 %in%(DVM_24h %>% unique())), 1, NA),
+                   migrating = ifelse(isTRUE(1 %in%(migration_power_twothirds %>% unique())), 1, NA))
+
+male_behaviour_day_df_long <- male_behaviour_day_df %>%
+  pivot_longer(!date, names_to = "behaviour", values_to = "presence") %>%
+  dplyr::mutate(presence = ifelse(presence == 1, T, F),
+                presence = ifelse(is.na(presence), F, T),
+                behaviour = factor(behaviour, levels = c('migrating', 'DVM', 'resting')))
+
+male_behaviours_tiles <- ggplot(data = male_behaviour_day_df_long) +
+  geom_tile(aes(x = date, y = behaviour, fill = presence)) +
+  scale_fill_manual(values = c('grey80', '#F06848')) +
+  # scale_fill_manual(values = c('grey80', 'grey20')) +
+  scale_x_datetime(date_breaks = "month", date_labels = "%b %y", expand = c(0,0)) +
+  theme(legend.position = "bottom",
+        legend.box = "horizontal",
+        legend.margin = margin(t = -5),
+        plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) +
+  scale_y_discrete(expand = c(0,0)) +
+  theme(axis.text.x = element_text(angle = 15, hjust = 0.5))
+
+male_behaviours_tiles
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/male_behaviours_tiles.png"), plot = male_behaviours_tiles, width = 17, height = 5, units = "cm")
 
