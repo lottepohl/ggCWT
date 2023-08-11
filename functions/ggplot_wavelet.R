@@ -25,14 +25,14 @@ library(ggplot2)
 # max_period <- NULL
 
 # test again
-wavelet_df <- xwt_both_12_24_df
-max_period <- wavelet_df %>% select(period) %>% max()
+# wavelet_df <- xwt_both_12_24_df
+# max_period <- wavelet_df %>% select(period) %>% max()
 
 # TODO: fix bug with `max_period`: when piping `ggplot_wavelet()`, `max_period` should be able to be left emtpy and not return errors
 # potentially has to do with the übergabe von dem dataframe an die funktion, während der Ausführung kann 
 # wsl nicht direkt drauf zugegriffen werden, deswegen kann das max nicht rausgezogen werden
 
-ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
+ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL, opacity = 0.6){
   # transformation function for the y axis
   my_trans <- scales::trans_new("log2_reverse", function(x) -log2(x), function(x) 2^-x)
   
@@ -51,17 +51,17 @@ ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
   }
   
   # change max and min date to include max x axis label completely --> make customisable
-  max_date <- max(wavelet_df$date, na.rm = T) + lubridate::days(10)
-  min_date <- min(wavelet_df$date, na.rm = T) -lubridate::days(10)
+  max_date <- max(wavelet_df$date, na.rm = T) + lubridate::days(0)
+  min_date <- min(wavelet_df$date, na.rm = T) -lubridate::days(0)
   
   ifelse(date %>% base::isTRUE(),
                   # for now: plot only power_log
                   plot <- ggplot2::ggplot(data = wavelet_df) +
                   geom_tile(aes(x = date, y = period, fill = power_log),
                             position = "identity",
-                            alpha = 0.6) + 
+                            alpha = opacity) + 
                   # plot the significant periods fully opaque
-                  geom_tile(data = wavelet_df %>% dplyr::filter(sig == 1), 
+                  geom_tile(data = wavelet_df %>% dplyr::filter(sig == 1),
                             aes(x = date, y = period, fill = power_log),
                             position = "identity") +
                   scale_y_continuous(trans = my_trans,
@@ -82,12 +82,14 @@ ggplot_wavelet <- function(wavelet_df, date = TRUE, max_period = NULL){
                         legend.margin = margin(t = -15)) +
                   theme(axis.text.x = element_text(angle = 15, hjust = 0.5))
          
+         # if(!is.null(signif_level))
+         
          , # if date != TRUE
          
                 plot <- ggplot(data = wavelet_df) +
                   geom_tile(aes(x = t, y = period, fill = power_log),
                             position = "identity",
-                            alpha = 0.6) + 
+                            alpha = opacity) + 
                   # plot the significant periods fully opaque
                   geom_tile(data = wavelet_df %>% dplyr::filter(sig == 1), 
                             aes(x = t, y = period, fill = power_log),
