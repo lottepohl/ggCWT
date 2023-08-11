@@ -103,18 +103,19 @@ generic_signals <- signal_12 %>%
 rm(signal_12, signal_24, signal_12_24)
 
 ## plot signals ####
-generic_signals_plot_subset <- ggplot2::ggplot(data = generic_signals %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(10), 
-                                                                                                              (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(10)))) +
+generic_signals_plot_subset <- ggplot2::ggplot(data = generic_signals %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(2), 
+                                                                                                              (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(2)))) +
   geom_line(aes(x = date_time, y = depth_m_12), size = .75, colour = 'darkorange') + #, colour = "#357984"
   geom_line(aes(x = date_time, y = depth_m_24), size = .75, colour = 'darkgreen') +
   geom_line(aes(x = date_time, y = depth_m_12_24), size = .75, colour = 'lightblue') +
   labs(x = "", y = "Depth in m") +
   scale_x_datetime(
     date_minor_breaks = "1 day",
-    date_breaks = "1 week",
+    date_breaks = "1 day",
     date_labels = "%b %d", #  
     expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0))
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
 
 generic_signals_plot_subset 
 
@@ -647,3 +648,148 @@ male_behaviours_tiles
 # save plot
 ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/male_behaviours_tiles.png"), plot = male_behaviours_tiles, width = 17, height = 5, units = "cm")
 
+
+
+# explanation plots ####
+
+# sample rate same as the data from *Mustelus asterias*, i.e. one value every 2 min
+
+# VERSTEHEN: warum f in days? Warum nicht hours?
+f = 1/720 #because if 30 samples per hour are to be taken, these amount to 30 * 24 = 720 samples per day
+
+signal_start_date <- "2018-07-01 00:00:00" %>% base::as.POSIXct(tz = "UTC")
+signal_length_days <- 550
+
+sampling_rate_hours <- 30 # 30 samples per hour
+dt_hours <- 1/sampling_rate_hours # 2 mins expressed in the unit of hours, i.e., 2 mins / 60 mins == 1/30 hours ~ 0.033h
+
+### 12 h ####
+
+signal_12 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                           depth_m = 5 * (sin((4 * pi)*t) - 1),
+                           date_time = seq(signal_start_date,
+                                           signal_start_date + lubridate::days(signal_length_days),
+                                           length.out = base::length(t))) %>%
+  dplyr::mutate(date_time = date_time - lubridate::hours(3))
+
+## plot signals
+signal12_plot_subset <- ggplot2::ggplot(data = signal_12 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.25, colour = '#4956AF') + #, colour = "#357984"
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+
+signal12_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal12_plot_subset.png"), plot = signal12_plot_subset, width = 10, height = 4, units = "cm")
+
+### 24 h ####
+
+signal_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                           depth_m = 5 * (sin((2 * pi)*t) - 1),
+                           date_time = seq(signal_start_date,
+                                           signal_start_date + lubridate::days(signal_length_days),
+                                           length.out = base::length(t))) %>%
+  dplyr::mutate(date_time = date_time - lubridate::hours(6))
+
+## plot signals
+signal24_plot_subset <- ggplot2::ggplot(data = signal_24 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#F0B848') + #, colour = "#357984"
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+
+signal24_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal24_plot_subset.png"), plot = signal24_plot_subset, width = 10, height = 4, units = "cm")
+
+### 12h+24h ####
+
+signal_12_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                           depth_m = (5 * (sin((2 * pi)*t) - 1)) + (5 * (sin((4 * pi)*t) - 1)),
+                           date_time = seq(signal_start_date,
+                                           signal_start_date + lubridate::days(signal_length_days),
+                                           length.out = base::length(t))) %>%
+  dplyr::mutate(date_time = date_time - lubridate::hours(0))
+
+## plot signals
+signal_12_24_plot_subset <- ggplot2::ggplot(data = signal_12_24 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#65A74A') + 
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+
+signal_12_24_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_24_plot_subset.png"), plot = signal_12_24_plot_subset, width = 10, height = 4, units = "cm")
+
+
+### 12h+24h & 24h ####
+
+signal_1224_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                              # depth_m = (2.5 * (sin((2 * pi)*t) - 0)) + (2.5 * (sin((4 * pi)*t) - 0)) -4.5,
+                              depth_m = (sqrt(5) * (sin((2 * pi)*t) - 0)) + (3.25 * (sin((4 * pi)*t) - 0)) -5,
+                              date_time = seq(signal_start_date,
+                                              signal_start_date + lubridate::days(signal_length_days),
+                                              length.out = base::length(t))) %>%
+  dplyr::mutate(depth_m = ifelse(date_time > signal_start_date + lubridate::days(signal_length_days / 2),
+                                 5 * (sin((2 * pi)*t) - 1),
+                                 depth_m))
+
+
+## plot signals
+signal_1224_24_plot_subset <- ggplot2::ggplot(data = signal_1224_24 %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(2), 
+                                                                                                             (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(2)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#65A74A') + 
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+
+signal_1224_24_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_1224_24_plot_subset.png"), plot = signal_1224_24_plot_subset, width = 10, height = 4, units = "cm")
+
+
+## combine generic signals ####
+
+generic_signals <- signal_12 %>%
+  dplyr::rename(depth_m_12 = depth_m) %>%
+  dplyr::left_join(signal_24, by = c("t", "date_time")) %>%
+  dplyr::rename(depth_m_24 = depth_m) %>%
+  dplyr::left_join(signal_12_24, by = c("t", "date_time")) %>%
+  dplyr::rename(depth_m_12_24 = depth_m) 
+
+rm(signal_12, signal_24, signal_12_24)
+
+## plot signals ####
+generic_signals_plot_subset <- ggplot2::ggplot(data = generic_signals %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(2), 
+                                                                                                              (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(2)))) +
+  geom_line(aes(x = date_time, y = depth_m_12), size = .75, colour = 'darkorange') + #, colour = "#357984"
+  geom_line(aes(x = date_time, y = depth_m_24), size = .75, colour = 'darkgreen') +
+  geom_line(aes(x = date_time, y = depth_m_12_24), size = .75, colour = 'lightblue') +
+  labs(x = "", y = "Depth in m") +
+  scale_x_datetime(
+    date_minor_breaks = "1 day",
+    date_breaks = "1 day",
+    date_labels = "%b %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+
+generic_signals_plot_subset 
