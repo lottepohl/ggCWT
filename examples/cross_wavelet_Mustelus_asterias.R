@@ -119,7 +119,7 @@ generic_signals_plot_subset <- ggplot2::ggplot(data = generic_signals %>% dplyr:
 
 generic_signals_plot_subset 
 
-# test: XWT of 12 and 24h signals
+# CWT & XWT of generic signals ####
 
 cwt_12_plot <- compute_CWT(values = generic_signals %>% dplyr::select(depth_m_12),
                            dt = 15 * dt_hours) %>%
@@ -153,9 +153,12 @@ cwt_12_24_plot <- compute_CWT(values = generic_signals %>% dplyr::select(depth_m
                            dt = 15 * dt_hours) %>%
   make_wavelet_df(date_times = generic_signals %>% dplyr::select(date_time),
                   dt = 15 * dt_hours) %>%
-  ggplot_wavelet(max_period = max(.$period))
+  ggplot_wavelet(max_period = 150, opacity = 0.45)
 
 cwt_12_24_plot
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_12_24_plot.png"), plot = cwt_12_24_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")), width = 15, height = 7, units = "cm")
+
 
 xwt_12_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
                                                      values1 = generic_signals %>% dplyr::select(depth_m_12),
@@ -166,6 +169,120 @@ xwt_12_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
   ggplot_wavelet(max_period = max(.$period)) # TODO: understand why argument for max_period is needed
 
 xwt_12_12_24_plot #%>% View()
+
+# 128h (mig) ####
+
+signal_128 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                                  depth_m = 
+                                    (10 * (sin(((2^(-2.25)) * 2 * pi)*t) - 1)), # +  # T = 128h
+                                    # (120 * (sin((2 * pi)*t) - 1)) + # T = 24h
+                                    # (80 * (sin((4 * pi)*t) - 1)), # T = 12
+                                  date_time = seq(signal_start_date,
+                                                  signal_start_date + lubridate::days(signal_length_days),
+                                                  length.out = base::length(t)))
+
+
+signal_128_plot_subset <- ggplot2::ggplot(data = signal_128 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(5)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#7F6656') + #, colour = "#357984"
+  # labs(x = "", y = "Depth in m") +
+  # labs(x = "", y = "") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) #+ 
+  # theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))  +
+  # theme(axis.text.y=element_blank())
+# legend.position = "none",
+# axis.text.x=element_blank(),
+
+signal_128_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_128_plot_subset.png"), plot = signal_128_plot_subset, width = 10, height = 4, units = "cm")
+
+# superposition of 12, 24, and 128h
+
+signal_12_24_128 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+                           depth_m = 
+                             (245 * (sin(((2^(-2.25)) * 2 * pi)*t) - 1)) +  # T = 128h
+                             (120 * (sin((2 * pi)*t) - 1)) + # T = 24h
+                             (80 * (sin((4 * pi)*t) - 1)), # T = 12
+                           date_time = seq(signal_start_date,
+                                           signal_start_date + lubridate::days(signal_length_days),
+                                           length.out = base::length(t)))
+
+cwt_12_24_128_plot <- compute_CWT(values = signal_12_24_128 %>% 
+                                    dplyr::filter(date_time < "2019-07-01 UTC" %>% base::as.POSIXct(tz = "utc")) %>%
+                                    dplyr::select(depth_m),
+                           dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = generic_signals %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = 150)
+
+cwt_12_24_128_plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_12_24_128_plot.png"), plot = cwt_12_24_128_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")), width = 13, height = 7, units = "cm")
+
+
+signal_12_24_128_plot_subset <- ggplot2::ggplot(data = signal_12_24_128 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#F06848') + #, colour = "#357984"
+  # labs(x = "", y = "Depth in m") +
+  labs(x = "", y = "") +
+  scale_x_datetime(
+    date_minor_breaks = "12 hours",
+    date_breaks = "1 day",
+    date_labels = "%B %d", #  
+    expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) + 
+  # theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))  +
+  theme(axis.text.y=element_blank())
+    # legend.position = "none",
+        # axis.text.x=element_blank(),
+
+signal_12_24_128_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_24_128_plot_subsetno_y_axlabs.png"), plot = signal_12_24_128_plot_subset, width = 10, height = 4, units = "cm")
+
+## f mig ####
+
+
+xwt_female_12_24_128_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                            values1 = depthlog_female %>% dplyr::select(depth_m),
+                                                            values2 = signal_12_24_128  %>%
+                                                              dplyr::filter(date_time %>% 
+                                                                              dplyr::between(min(depthlog_female$date_time),
+                                                                                             max(depthlog_female$date_time))) %>% 
+                                                              dplyr::select(depth_m),
+                                                            dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.95) %>%
+  ggplot_wavelet(max_period = 150) # TODO: understand why argument for max_period is needed
+
+xwt_female_12_24_128_plot
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_24_128_plot.png"), plot = xwt_female_12_24_128_plot + theme(plot.margin = margin(0,0.5,0,0, unit = "cm"), legend.position = "none"), width = 13, height = 7, units = "cm")
+
+## m mig ####
+
+
+xwt_male_12_24_128_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
+                                                                values1 = depthlog_male %>% dplyr::select(depth_m),
+                                                                values2 = signal_12_24_128  %>%
+                                                                  dplyr::filter(date_time %>% 
+                                                                                  dplyr::between(min(depthlog_male$date_time),
+                                                                                                 max(depthlog_male$date_time))) %>% 
+                                                                  dplyr::select(depth_m),
+                                                                dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = depthlog_male %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours,
+                  signif_level = 0.95) %>%
+  ggplot_wavelet(max_period = 150) # TODO: understand why argument for max_period is needed
+
+xwt_male_12_24_128_plot
+
+# save plot
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_24_128_plot.png"), plot = xwt_male_12_24_128_plot + theme(plot.margin = margin(0,0.5,0,0, unit = "cm"), legend.position = "none"), width = 13, height = 7, units = "cm")
+
 
 
 # Mustelus asterias depthlogs ####
@@ -221,7 +338,7 @@ cwt_female_plot <- compute_CWT(values = depthlog_female %>% dplyr::select(depth_
 cwt_female_plot 
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_female_plot.png"), plot = cwt_female_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_female_plot.png"), plot = cwt_female_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")), width = 13, height = 7.5, units = "cm")
 
 
 # XWT
@@ -274,12 +391,12 @@ xwt_female_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavele
   make_wavelet_df(date_times = depthlog_female %>% dplyr::select(date_time),
                   dt = 15 * dt_hours,
                   signif_level = 0.95) %>%
-  ggplot_wavelet(max_period = 70) # TODO: understand why argument for max_period is needed
+  ggplot_wavelet(max_period = 150) # TODO: understand why argument for max_period is needed
 
 xwt_female_12_24_plot
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_24_plot.png"), plot = xwt_female_12_24_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_female_12_24_plot.png"), plot = xwt_female_12_24_plot + theme(plot.margin = margin(0,0.5,0,0, unit = "cm"), legend.position = "none"), width = 13, height = 7, units = "cm")
 
 
 # XWT male shark ####
@@ -297,7 +414,7 @@ cwt_male_plot <- compute_CWT(values = depthlog_male %>% dplyr::select(depth_m),
 
 cwt_male_plot 
 
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_male_plot.png"), plot = cwt_male_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/cwt_male_plot.png"), plot = cwt_male_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")), width = 13, height = 7, units = "cm")
 
 # XWT
 
@@ -342,28 +459,30 @@ ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male
 xwt_male_12_24_plot <- compute_bivariate_wavelet_analysis(type = "cross wavelet",
                                                        values1 = depthlog_male %>%
                                                          dplyr::filter(lubridate::date(date_time) %>% 
-                                                                         dplyr::between(min(lubridate::date(depthlog_female$date_time)),
-                                                                                        max(lubridate::date(depthlog_female$date_time)))) %>% 
+                                                                         dplyr::between(min(lubridate::date(depthlog_male$date_time)) + lubridate::days(1),
+                                                                                        max(lubridate::date(depthlog_male$date_time)) - lubridate::days(1))) %>% 
                                                          dplyr::select(depth_m) ,
                                                        values2 = generic_signals  %>%
                                                          dplyr::filter(lubridate::date(date_time) %>% 
-                                                                         dplyr::between(min(lubridate::date(depthlog_female$date_time)),
-                                                                                        max(lubridate::date(depthlog_female$date_time)))) %>% 
+                                                                         dplyr::between(min(lubridate::date(depthlog_male$date_time)) + lubridate::days(1),
+                                                                                        max(lubridate::date(depthlog_male$date_time)) -  lubridate::days(1))) %>% 
                                                          dplyr::select(depth_m_12_24),
                                                        dt = 15 * dt_hours) %>%
-  make_wavelet_df(date_times = depthlog_male%>%
+  make_wavelet_df(date_times = depthlog_male %>%
                     dplyr::filter(lubridate::date(date_time) %>% 
-                                    dplyr::between(min(lubridate::date(depthlog_female$date_time)),
-                                                   max(lubridate::date(depthlog_female$date_time)))) %>% 
+                                    dplyr::between(min(lubridate::date(depthlog_male$date_time)) + lubridate::days(1),
+                                                   max(lubridate::date(depthlog_male$date_time)) - lubridate::days(1))) %>% 
                     dplyr::select(date_time),
                   dt = 15 * dt_hours,
                   signif_level = 0.95) %>%
-  ggplot_wavelet(max_period = 70) # TODO: understand why argument for max_period is needed
+  ggplot_wavelet(max_period = 150) # TODO: understand why argument for max_period is needed
 
-xwt_male_12_24_plot
+xwt_male_12_24_plot + 
+  theme(plot.margin = margin(0,0.5,0,0, unit = "cm"),
+        legend.position = "none")
 
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_24_plot.png"), plot = xwt_male_12_24_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/xwt_male_12_24_plot.png"), plot = xwt_male_12_24_plot + theme(plot.margin = margin(0,0.5,0,0, unit = "cm"), legend.position = "none"), width = 13, height = 7, units = "cm")
 
 
 # gridExtra::grid.arrange(xwt_female_12_plot, xwt_male_12_plot,
@@ -527,13 +646,13 @@ behaviours_cwt_female_plot <- cwt_female_plot +
             alpha = 1) +
   geom_tile(data = female_behaviour_df %>% dplyr::filter(migration_power_twothirds == 1),
             aes(x = date, y = period),
-            fill = 'grey85',
+            fill = 'grey100',
             position = "identity",
             alpha = 1)
 
-behaviours_cwt_female_plot
+behaviours_cwt_female_plot + theme(plot.margin = margin(0,0.5,0,0, "cm"))
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_cwt_female_plot.png"), plot = behaviours_cwt_female_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_cwt_female_plot.png"), plot = behaviours_cwt_female_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")), width = 13, height = 7, units = "cm")
 
 female_behaviour_day_df <- female_behaviour_df %>%
   dplyr::group_by(date) %>%
@@ -603,21 +722,24 @@ behaviours_cwt_male_plot <- cwt_male_plot +
             aes(x = date, y = period),
             fill = 'grey15',
             position = "identity",
-            alpha = 1)  +
+            alpha = 0)  +
   geom_tile(data = male_behaviour_df %>% dplyr::filter(DVM_24h == 1),
             aes(x = date, y = period),
             fill = 'grey50',
             position = "identity",
-            alpha = 1) +
+            alpha = 0) +
   geom_tile(data = male_behaviour_df %>% dplyr::filter(migration_power_twothirds == 1),
             aes(x = date, y = period),
-            fill = 'grey85',
+            fill = 'grey100',
             position = "identity",
             alpha = 1)
 
-behaviours_cwt_male_plot
+behaviours_cwt_male_plot + theme(plot.margin = margin(0,0.5,0,0, "cm"))
 # save plot
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_cwt_male_plot.png"), plot = behaviours_cwt_male_plot, width = 13, height = 7, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/behaviours_migration_cwt_male_plot.png"), plot = behaviours_cwt_male_plot + theme(plot.margin = margin(0,0.5,0,0, "cm")),  width = 13, height = 7, units = "cm")
+                                                                                                                                                          # legend.position = "none",
+                                                                                                                                                          # axis.text.y=element_blank(),
+                                                                                                                                                          # axis.text.x=element_blank()),
 
 male_behaviour_day_df <- male_behaviour_df %>%
   dplyr::group_by(date) %>%
@@ -674,18 +796,22 @@ signal_12 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
 
 ## plot signals
 signal12_plot_subset <- ggplot2::ggplot(data = signal_12 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
-  geom_line(aes(x = date_time, y = depth_m), size = 1.25, colour = '#4956AF') + #, colour = "#357984"
-  labs(x = "", y = "Depth in m") +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.25, colour = '#F0B848') + #, colour = "#357984"
+  # labs(x = "", y = "Depth in m") +
+  labs(x = "", y = " ") +
   scale_x_datetime(
     date_minor_breaks = "12 hours",
     date_breaks = "1 day",
     date_labels = "%B %d", #  
     expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) + 
-  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) +
+  theme(legend.position = "none",
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank())
 
 signal12_plot_subset 
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal12_plot_subset.png"), plot = signal12_plot_subset, width = 10, height = 4, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal12_plot_subset_noaxlabs.png"), plot = signal12_plot_subset, width = 10, height = 4, units = "cm")
 
 ### 24 h ####
 
@@ -698,18 +824,22 @@ signal_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
 
 ## plot signals
 signal24_plot_subset <- ggplot2::ggplot(data = signal_24 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
-  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#F0B848') + #, colour = "#357984"
-  labs(x = "", y = "Depth in m") +
+  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#4956AF') + #, colour = "#357984"
+  # labs(x = "", y = "Depth in m") +
+  labs(x = "", y = "") +
   scale_x_datetime(
     date_minor_breaks = "12 hours",
     date_breaks = "1 day",
     date_labels = "%B %d", #  
     expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) + 
-  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))  +
+  theme(legend.position = "none",
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank())
 
 signal24_plot_subset 
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal24_plot_subset.png"), plot = signal24_plot_subset, width = 10, height = 4, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal24_plot_subset_noaxlabs.png"), plot = signal24_plot_subset, width = 10, height = 4, units = "cm")
 
 ### 12h+24h ####
 
@@ -723,73 +853,77 @@ signal_12_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
 ## plot signals
 signal_12_24_plot_subset <- ggplot2::ggplot(data = signal_12_24 %>% dplyr::filter(date_time %>% between(signal_start_date, signal_start_date + lubridate::days(4)))) +
   geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#65A74A') + 
-  labs(x = "", y = "Depth in m") +
+  # labs(x = "", y = "Depth in m") +
+  labs(x = "", y = "") +
   scale_x_datetime(
     date_minor_breaks = "12 hours",
     date_breaks = "1 day",
     date_labels = "%B %d", #  
     expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) + 
-  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) +
+  theme(legend.position = "none",
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank())
 
 signal_12_24_plot_subset 
-ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_24_plot_subset.png"), plot = signal_12_24_plot_subset, width = 10, height = 4, units = "cm")
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_12_24_plot_subset_noaxlabs.png"), plot = signal_12_24_plot_subset, width = 10, height = 4, units = "cm")
 
 
 ### 12h+24h & 24h ####
 
+# signal_12_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
+#                               depth_m = (5 * (sin((2 * pi)*t) - 1)) + (5 * (sin((4 * pi)*t) - 1)),
+#                               date_time = seq(signal_start_date,
+#                                               signal_start_date + lubridate::days(signal_length_days),
+#                                               length.out = base::length(t)))
+
+
 signal_1224_24 <- dplyr::tibble(t = seq(0,signal_length_days - f, f),
-                              # depth_m = (2.5 * (sin((2 * pi)*t) - 0)) + (2.5 * (sin((4 * pi)*t) - 0)) -4.5,
-                              depth_m = (sqrt(5) * (sin((2 * pi)*t) - 0)) + (3.25 * (sin((4 * pi)*t) - 0)) -5,
+                              # depth_m = (5 * (sin((2 * pi)*t) - 1)) + (5 * (sin((4 * pi)*t) - 1)) , # for CWT
+                              depth_m = (sqrt(5) * (sin((2 * pi)*t) - 0)) + (3.25 * (sin((4 * pi)*t) - 0)) -5, # for example plot
                               date_time = seq(signal_start_date,
                                               signal_start_date + lubridate::days(signal_length_days),
-                                              length.out = base::length(t))) %>%
+                                              length.out = base::length(t)),
+                              col = "hi") %>%
   dplyr::mutate(depth_m = ifelse(date_time > signal_start_date + lubridate::days(signal_length_days / 2),
                                  5 * (sin((2 * pi)*t) - 1),
-                                 depth_m))
+                                 depth_m),
+                col = ifelse(date_time > signal_start_date + lubridate::days(signal_length_days / 2),
+                                 "bye",
+                                 col))
 
 
 ## plot signals
-signal_1224_24_plot_subset <- ggplot2::ggplot(data = signal_1224_24 %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(2), 
-                                                                                                             (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(2)))) +
-  geom_line(aes(x = date_time, y = depth_m), size = 1.75, colour = '#65A74A') + 
+signal_1224_24_plot_subset <- ggplot2::ggplot(data = signal_1224_24 %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(4), 
+                                                                                                             (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(4)))) +
+  geom_line(aes(x = date_time, y = depth_m, colour = col), size = 1.75) + 
   labs(x = "", y = "Depth in m") +
+  # labs(x = "", y = "") +
   scale_x_datetime(
     date_minor_breaks = "12 hours",
     date_breaks = "1 day",
     date_labels = "%B %d", #  
     expand = c(0,0)) +
+  scale_color_manual(values = c('#4956AF', '#65A74A')) +
   scale_y_continuous(expand = c(0,0)) + 
-  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
+  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm")) +
+  theme(legend.position = "none",
+        # axis.text.y=element_blank(),
+        axis.text.x=element_blank())
 
 signal_1224_24_plot_subset 
 ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_1224_24_plot_subset.png"), plot = signal_1224_24_plot_subset, width = 10, height = 4, units = "cm")
 
 
-## combine generic signals ####
+## CWT of ex signal ####
 
-generic_signals <- signal_12 %>%
-  dplyr::rename(depth_m_12 = depth_m) %>%
-  dplyr::left_join(signal_24, by = c("t", "date_time")) %>%
-  dplyr::rename(depth_m_24 = depth_m) %>%
-  dplyr::left_join(signal_12_24, by = c("t", "date_time")) %>%
-  dplyr::rename(depth_m_12_24 = depth_m) 
+signal_1224_24_CWT <- compute_CWT(values = signal_1224_24 %>% dplyr::select(depth_m),
+                                                   dt = 15 * dt_hours) %>%
+  make_wavelet_df(date_times = signal_1224_24 %>% dplyr::select(date_time),
+                  dt = 15 * dt_hours) %>%
+  ggplot_wavelet(max_period = 50)
 
-rm(signal_12, signal_24, signal_12_24)
+signal_1224_24_CWT + theme(axis.text.x=element_blank())
 
-## plot signals ####
-generic_signals_plot_subset <- ggplot2::ggplot(data = generic_signals %>% dplyr::filter(date_time %>% between((signal_start_date + lubridate::days(signal_length_days / 2)) - lubridate::days(2), 
-                                                                                                              (signal_start_date + lubridate::days(signal_length_days / 2)) + lubridate::days(2)))) +
-  geom_line(aes(x = date_time, y = depth_m_12), size = .75, colour = 'darkorange') + #, colour = "#357984"
-  geom_line(aes(x = date_time, y = depth_m_24), size = .75, colour = 'darkgreen') +
-  geom_line(aes(x = date_time, y = depth_m_12_24), size = .75, colour = 'lightblue') +
-  labs(x = "", y = "Depth in m") +
-  scale_x_datetime(
-    date_minor_breaks = "1 day",
-    date_breaks = "1 day",
-    date_labels = "%b %d", #  
-    expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) + 
-  theme(plot.margin = margin(0.5,0.5,0.5,0.5, "cm"))
-
-generic_signals_plot_subset 
+ggplot2::ggsave(filename = base::paste0(base::getwd(), "/examples/plots/signal_1224_24_CWT.png"), plot = signal_1224_24_CWT + theme(axis.text.x=element_blank()), width = 10, height = 6, units = "cm")
