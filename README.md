@@ -13,7 +13,7 @@ Wrapper functions to calculate and plot wavelet analyses in R, based on the R pa
     publisher    = {Zenodo},  
     version      = {0.1.0},  
     doi          = {10.5281/zenodo.8254304},  
-    url          = {https://doi.org/10.5281/zenodo.8254304}  
+    url          = { https://doi.org/10.5281/zenodo.8254304 }  
 }  
 
 **Cite Them Right 10th edition - Harvard:**  
